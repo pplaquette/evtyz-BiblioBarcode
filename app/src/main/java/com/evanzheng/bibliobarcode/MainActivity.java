@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.media.Image;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.SparseArray;
 import android.widget.Toast;
 
@@ -24,7 +25,9 @@ import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.barcode.Barcode;
@@ -32,6 +35,11 @@ import com.google.android.gms.vision.barcode.BarcodeDetector;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.common.util.concurrent.ListenableFuture;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
@@ -45,7 +53,11 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
     private FloatingActionButton takePhoto;
 
     //Initialize Volley Request Queue
-    RequestQueue requestQueue;
+    private RequestQueue requestQueue;
+
+    //Initialize book list
+    private List<Book> bookList;
+
 
     //Initializing our callback methods
     ImageCapture.OnImageCapturedCallback captureProcess = new ImageCapture.OnImageCapturedCallback() {
@@ -72,7 +84,6 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
     private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
     private ImageCapture imageCapture;
     private BarcodeDetector detector;
-
     private Context context;
 
     @Override
@@ -92,7 +103,6 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
                 return;
             }
         }
-
         initialize();
     }
 
@@ -122,6 +132,9 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
 
         //Set up request queue
         requestQueue = Volley.newRequestQueue(context);
+
+        //Set up book list
+        bookList = new ArrayList<>();
 
 
         //Set up views
@@ -212,16 +225,50 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
     }
 
     //Processes the code
-    static int processCode(String code) {
+    protected int processCode(String code) {
         if (!BarcodeHelper.isISBN(code)) { return 1; }
-
-
+        loadBook(code);
         return 0;
     }
 
+    protected void loadBook(String isbn) {
+        String url = "https://www.googleapis.com/books/v1/volumes?q=isbn:".concat(isbn);
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, response -> {
+            try {
+                String specificUrl = response.getJSONArray("items").getJSONObject(0).getString("selfLink");
+                JsonObjectRequest specificRequest = new JsonObjectRequest(Request.Method.GET, specificUrl, null, response1 -> {
+                    try {
+                        JSONObject info = response1.getJSONObject("volumeInfo");
+                        Book newBook = new Book(info);
+                        String publisher = newBook.publisher;
+                        if (publisher != null) {
+                            String cityCountry[] = requestLocation(publisher);
+                            newBook.setCity(cityCountry[0]);
+                            newBook.setState(cityCountry[1]);
+                        }
+                        bookList.add(newBook);
+                    } catch (JSONException e2) {
+                        Log.e("specific book", "Json error");
+                    }
+                }, error1 -> Log.e("specific book", "List error"));
+
+                requestQueue.add(specificRequest);
 
 
 
 
+            } catch (JSONException e) {
+                Log.e("book", "Json error", e);
+            }
+        }, error -> Log.e("book", "List error", error));
 
+
+        requestQueue.add(request);
+    }
+
+    protected String[] requestLocation(String publisher) {
+        String locations[] = new String[2];
+        return locations;
+    }
 }
