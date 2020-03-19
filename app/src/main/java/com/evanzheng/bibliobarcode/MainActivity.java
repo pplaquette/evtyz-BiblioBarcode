@@ -2,10 +2,8 @@ package com.evanzheng.bibliobarcode;
 
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.Image;
 import android.os.Bundle;
-import android.util.Log;
 import android.util.SparseArray;
 
 import androidx.annotation.NonNull;
@@ -27,13 +25,11 @@ import com.google.android.gms.vision.barcode.BarcodeDetector;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.common.util.concurrent.ListenableFuture;
 
-import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
+
 //Created by Evan Zheng
-
-
 
 public class MainActivity extends AppCompatActivity implements CameraXConfig.Provider {
 
@@ -47,7 +43,8 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
         @Override
         public void onCaptureSuccess(@NonNull ImageProxy imageproxy) {
             @SuppressLint("UnsafeExperimentalUsageError") Image image = imageproxy.getImage();
-            Bitmap bitmap = imageToBitmap(image);
+            assert image != null;
+            Bitmap bitmap = BarcodeHelper.imageToBitmap(image);
             processImage(bitmap);
             super.onCaptureSuccess(imageproxy);
             image.close();
@@ -60,9 +57,7 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
     };
 
     //Initializing our executor
-    private Executor takePictureExecutor = command -> {
-        command.run();
-    };
+    private Executor takePictureExecutor = Runnable::run;
 
     //Initializing camera and barcode objects
     private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
@@ -155,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
             for (int i = 0; i < size; i++) {
                 Barcode targetCode = barcodes.valueAt(0);
                 String code = targetCode.rawValue;
-                int errorVal = processCode(code);
+                int errorVal = BarcodeHelper.processCode(code);
 
                 //If barcode is valid, quit
                 if (errorVal == 0) {
@@ -166,50 +161,9 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
         }
     }
 
-    public static boolean isISBN(@NonNull String code) {
-        if (code.length() == 13) {
-            boolean weightThree = false;
-            int checkSum = 0;
-            for (int i = 0; i < 13; i++) {
-                char c = code.charAt(i);
-                if (Character.isDigit(c)) {
-                    int digit = Character.getNumericValue(c);
-                    if (weightThree) { digit = digit * 3; }
-                    weightThree = !weightThree;
-                    checkSum = checkSum + digit;
-                } else { return false; }
-            }
-            if (checkSum % 10 == 0) { return true; } else { return false; }
-        } else if (code.length() == 10) {
-            int checkSum = 0;
-            for (int i = 0; i < 10; i++) {
-                char c = code.charAt(i);
-                if (Character.isDigit(c)) {
-                    int digit = Character.getNumericValue(c) * (10 - i);
-                    checkSum = checkSum + digit;
-                } else { return false; }
-            }
-            if (checkSum % 11 == 0) { return true; } else { return false; }
-        } else {
-            return false;
-        }
-    }
-
-    public static int processCode(String code) {
-        if (!isISBN(code)) { return 1; }
 
 
 
-        return 0;
-    }
-
-    //Converting image to Bitmap object, courtesy of Rod_Algonquin at https://stackoverflow.com/questions/41775968/how-to-convert-android-media-image-to-bitmap-object
-    public static Bitmap imageToBitmap(Image image) {
-        ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-        byte[] bytes = new byte[buffer.capacity()];
-        buffer.get(bytes);
-        return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
-    }
 
 
 }
