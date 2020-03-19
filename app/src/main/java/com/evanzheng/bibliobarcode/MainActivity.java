@@ -1,10 +1,14 @@
 package com.evanzheng.bibliobarcode;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.media.Image;
 import android.os.Bundle;
 import android.util.SparseArray;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,8 +21,11 @@ import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
@@ -34,9 +41,11 @@ import java.util.concurrent.Executor;
 public class MainActivity extends AppCompatActivity implements CameraXConfig.Provider {
 
     //Initializing views
-    PreviewView viewfinder;
-    FloatingActionButton takePhoto;
+    private PreviewView viewfinder;
+    private FloatingActionButton takePhoto;
 
+    //Initialize Volley Request Queue
+    RequestQueue requestQueue;
 
     //Initializing our callback methods
     ImageCapture.OnImageCapturedCallback captureProcess = new ImageCapture.OnImageCapturedCallback() {
@@ -62,17 +71,58 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
     //Initializing camera and barcode objects
     private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
     private ImageCapture imageCapture;
-    BarcodeDetector detector;
+    private BarcodeDetector detector;
+
+    private Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Checking permissions, credit to Superpowered Effects Library for permission algorithm
+        String[] permissions = {
+                Manifest.permission.CAMERA,
+                Manifest.permission.INTERNET
+        };
+        for (String s:permissions) {
+            if (ContextCompat.checkSelfPermission(this, s) != PackageManager.PERMISSION_GRANTED) {
+                // Some permissions are not granted, ask the user.
+                ActivityCompat.requestPermissions(this, permissions, 0);
+                return;
+            }
+        }
+
+        initialize();
+    }
+
+    //Written by Superpowered Effects Library
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        // Called when the user answers to the permission dialogs.
+        if ((requestCode != 0) || (grantResults.length < 1) || (grantResults.length != permissions.length)) return;
+        boolean hasAllPermissions = true;
+
+        for (int grantResult:grantResults) if (grantResult != PackageManager.PERMISSION_GRANTED) {
+            hasAllPermissions = false;
+            Toast.makeText(getApplicationContext(), "Please allow all permissions for the app.", Toast.LENGTH_LONG).show();
+        }
+
+        if (hasAllPermissions) initialize();
+    }
+
+    protected void initialize() {
+        //Set up context
+        context = getApplicationContext();
+
         //Set up detector
-        detector = new BarcodeDetector.Builder(getApplicationContext())
+        detector = new BarcodeDetector.Builder(context)
                 .setBarcodeFormats(0)
                 .build();
+
+        //Set up request queue
+        requestQueue = Volley.newRequestQueue(context);
+
 
         //Set up views
         viewfinder = findViewById(R.id.preview_view);
@@ -150,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
             for (int i = 0; i < size; i++) {
                 Barcode targetCode = barcodes.valueAt(0);
                 String code = targetCode.rawValue;
-                int errorVal = BarcodeHelper.processCode(code);
+                int errorVal = processCode(code);
 
                 //If barcode is valid, quit
                 if (errorVal == 0) {
@@ -159,6 +209,14 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
             }
             return 1;
         }
+    }
+
+    //Processes the code
+    static int processCode(String code) {
+        if (!BarcodeHelper.isISBN(code)) { return 1; }
+
+
+        return 0;
     }
 
 

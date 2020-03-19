@@ -9,10 +9,8 @@ import androidx.annotation.NonNull;
 import java.nio.ByteBuffer;
 
 class BarcodeHelper {
-    static int processCode(String code) {
-        if (!isISBN(code)) { return 1; }
-        return 0;
-    }
+
+
 
     //Converting image to Bitmap object, courtesy of Rod_Algonquin at https://stackoverflow.com/questions/41775968/how-to-convert-android-media-image-to-bitmap-object
     static Bitmap imageToBitmap(Image image) {
@@ -22,7 +20,8 @@ class BarcodeHelper {
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
     }
 
-    private static boolean isISBN(@NonNull String code) {
+    //Checks if code is ISBN
+    static boolean isISBN(@NonNull String code) {
         if (code.length() == 13) {
             boolean weightThree = false;
             int checkSum = 0;
