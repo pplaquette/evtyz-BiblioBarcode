@@ -1,28 +1,27 @@
 package com.evanzheng.bibliobarcode;
 
-import android.content.Context;
+
+import android.annotation.SuppressLint;
+import android.app.SearchManager;
 import android.content.Intent;
 import android.os.Bundle;
-
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,7 +38,7 @@ public class BookActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private LayoutInflater layoutInflater;
     private ViewGroup viewGroup;
-
+    private Button searchButton;
 
 
     @Override
@@ -52,6 +51,8 @@ public class BookActivity extends AppCompatActivity {
         setTitle("Edit Info:");
         setSupportActionBar(toolbar);
         viewGroup = findViewById(R.id.listFields);
+        searchButton = findViewById(R.id.searchLocation);
+        searchButton.setVisibility(View.INVISIBLE);
 
         //Set up layout inflater
         layoutInflater = getLayoutInflater();
@@ -97,37 +98,37 @@ public class BookActivity extends AppCompatActivity {
     }
 
     protected void processBook() {
-        show("title");
+        showState();
+        showCity();
+        showYear();
+        showPublisher();
         showAuthors();
-        show("publisher");
-        show("year");
-        show("city");
-        show("state");
+        showTitle();
+        searchButton.setVisibility(View.VISIBLE);
     }
 
-    private void show(String type) {
-        View fieldLayout = layoutInflater.inflate(R.layout.field, null);
+    @SuppressLint("SetTextI18n")
+    private void showTitle() {
+        @SuppressLint("InflateParams") View fieldLayout = layoutInflater.inflate(R.layout.field, null);
         TextView description = fieldLayout.findViewById(R.id.fieldDesc);
-        description.setText("Title: ");
+        description.setText("Title:");
         EditText titleEdit = fieldLayout.findViewById(R.id.fieldEdit);
         titleEdit.setText(book.title);
+        titleEdit.setHint("Title");
         titleEdit.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                return;
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                book.title = (String) s;
+                book.title = s.toString();
             }
 
             @Override
             public void afterTextChanged(Editable s) {
-                return;
             }
         });
-
         viewGroup.addView(fieldLayout, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
     }
 
@@ -135,4 +136,110 @@ public class BookActivity extends AppCompatActivity {
 
     }
 
+    private void showPublisher() {
+        View fieldLayout = layoutInflater.inflate(R.layout.field, null);
+        TextView description = fieldLayout.findViewById(R.id.fieldDesc);
+        description.setText("Publisher:");
+        EditText titleEdit = fieldLayout.findViewById(R.id.fieldEdit);
+        titleEdit.setText(book.publisher);
+        titleEdit.setHint("Publisher");
+        titleEdit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                book.publisher = s.toString();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+        viewGroup.addView(fieldLayout, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+    }
+
+    private void showYear() {
+        View fieldLayout = layoutInflater.inflate(R.layout.field, null);
+        TextView description = fieldLayout.findViewById(R.id.fieldDesc);
+        description.setText("Year of Publishing:");
+        EditText titleEdit = fieldLayout.findViewById(R.id.fieldEdit);
+        titleEdit.setText(book.year);
+        titleEdit.setHint("Year");
+        titleEdit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                book.year = s.toString();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+        viewGroup.addView(fieldLayout, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+    }
+
+    private void showCity() {
+        View fieldLayout = layoutInflater.inflate(R.layout.field, null);
+        TextView description = fieldLayout.findViewById(R.id.fieldDesc);
+        description.setText("City of Publishing: ");
+        EditText titleEdit = fieldLayout.findViewById(R.id.fieldEdit);
+        titleEdit.setText(book.city);
+        titleEdit.setHint("City");
+        titleEdit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                book.state = s.toString();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+        viewGroup.addView(fieldLayout, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+    }
+
+    private void showState() {
+        View fieldLayout = layoutInflater.inflate(R.layout.field, null);
+        TextView description = fieldLayout.findViewById(R.id.fieldDesc);
+        description.setText("State:");
+        EditText titleEdit = fieldLayout.findViewById(R.id.fieldEdit);
+        titleEdit.setText(book.state);
+        titleEdit.setHint("State");
+        titleEdit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                book.state = s.toString();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+        viewGroup.addView(fieldLayout, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+    }
+
+
+    public void searchLocation(View view) {
+        if (book.publisher == null) {
+            return;
+        }
+        Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
+        String keyword = book.publisher.concat(" publisher location");
+        intent.putExtra(SearchManager.QUERY, keyword);
+        startActivity(intent);
+    }
 }

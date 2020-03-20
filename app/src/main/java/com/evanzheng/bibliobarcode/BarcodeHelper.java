@@ -11,7 +11,6 @@ import java.nio.ByteBuffer;
 class BarcodeHelper {
 
 
-
     //Converting image to Bitmap object, courtesy of Rod_Algonquin at https://stackoverflow.com/questions/41775968/how-to-convert-android-media-image-to-bitmap-object
     static Bitmap imageToBitmap(Image image) {
         ByteBuffer buffer = image.getPlanes()[0].getBuffer();
@@ -29,10 +28,14 @@ class BarcodeHelper {
                 char c = code.charAt(i);
                 if (Character.isDigit(c)) {
                     int digit = Character.getNumericValue(c);
-                    if (weightThree) { digit = digit * 3; }
+                    if (weightThree) {
+                        digit = digit * 3;
+                    }
                     weightThree = !weightThree;
                     checkSum = checkSum + digit;
-                } else { return false; }
+                } else {
+                    return false;
+                }
             }
             return checkSum % 10 == 0;
         } else if (code.length() == 10) {
@@ -42,7 +45,9 @@ class BarcodeHelper {
                 if (Character.isDigit(c)) {
                     int digit = Character.getNumericValue(c) * (10 - i);
                     checkSum = checkSum + digit;
-                } else { return false; }
+                } else {
+                    return false;
+                }
             }
             return checkSum % 11 == 0;
         } else {

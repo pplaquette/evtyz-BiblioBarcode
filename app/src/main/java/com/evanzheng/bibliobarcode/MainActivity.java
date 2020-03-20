@@ -8,7 +8,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.media.Image;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
@@ -29,21 +28,12 @@ import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.common.util.concurrent.ListenableFuture;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
@@ -56,12 +46,12 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
     private PreviewView viewfinder;
     private FloatingActionButton takePhoto;
     private ProgressBar loading;
-
-
-    //Initialize book list
-    private List<Book> bookList;
-
-
+    //Initializing our executor
+    private Executor takePictureExecutor = Runnable::run;
+    //Initializing camera and barcode objects
+    private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
+    private ImageCapture imageCapture;
+    private BarcodeDetector detector;
     //Initializing our image callback methods
     ImageCapture.OnImageCapturedCallback captureProcess = new ImageCapture.OnImageCapturedCallback() {
         @Override
@@ -79,14 +69,6 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
             super.onError(exception);
         }
     };
-
-    //Initializing our executor
-    private Executor takePictureExecutor = Runnable::run;
-
-    //Initializing camera and barcode objects
-    private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
-    private ImageCapture imageCapture;
-    private BarcodeDetector detector;
     private Context context;
 
     @Override
@@ -99,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
                 Manifest.permission.CAMERA,
                 Manifest.permission.INTERNET
         };
-        for (String s:permissions) {
+        for (String s : permissions) {
             if (ContextCompat.checkSelfPermission(this, s) != PackageManager.PERMISSION_GRANTED) {
                 // Some permissions are not granted, ask the user.
                 ActivityCompat.requestPermissions(this, permissions, 0);
@@ -107,19 +89,23 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
             }
         }
         initialize();
+
+
     }
 
     // Credit to Superpowered Effects Library
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         // Called when the user answers to the permission dialogs.
-        if ((requestCode != 0) || (grantResults.length < 1) || (grantResults.length != permissions.length)) return;
+        if ((requestCode != 0) || (grantResults.length < 1) || (grantResults.length != permissions.length))
+            return;
         boolean hasAllPermissions = true;
 
-        for (int grantResult:grantResults) if (grantResult != PackageManager.PERMISSION_GRANTED) {
-            hasAllPermissions = false;
-            Toast.makeText(getApplicationContext(), "Please allow all permissions for the app.", Toast.LENGTH_LONG).show();
-        }
+        for (int grantResult : grantResults)
+            if (grantResult != PackageManager.PERMISSION_GRANTED) {
+                hasAllPermissions = false;
+                Toast.makeText(getApplicationContext(), "Please allow all permissions for the app.", Toast.LENGTH_LONG).show();
+            }
 
         if (hasAllPermissions) initialize();
     }
@@ -133,18 +119,10 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
                 .setBarcodeFormats(0)
                 .build();
 
-
-
-        // Set up book list
-        bookList = new ArrayList<>();
-
-
         // Set up views
         viewfinder = findViewById(R.id.preview_view);
         takePhoto = findViewById(R.id.take_photo);
         loading = findViewById(R.id.loading);
-
-
 
         // Set up camera provider, and bind our preview and take functions to it
         cameraProviderFuture = ProcessCameraProvider.getInstance(this);
@@ -234,15 +212,15 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
 
     //Processes the code
     protected int processCode(String code) {
-        if (!BarcodeHelper.isISBN(code)) { return 1; }
+        if (!BarcodeHelper.isISBN(code)) {
+            return 1;
+        }
         Intent intent = new Intent(this, BookActivity.class);
         intent.putExtra("barcode", code);
         startActivity(intent);
         loading.setVisibility(View.INVISIBLE);
-
         return 0;
     }
-
 
 
 }

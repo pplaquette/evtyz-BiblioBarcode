@@ -12,8 +12,20 @@
         android:id="@+id/listFields"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center_horizontal"
         android:orientation="vertical">
 
-
+        <Button
+            android:id="@+id/searchLocation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:clickable="true"
+            android:focusable="true"
+            android:onClick="searchLocation"
+            android:paddingLeft="15sp"
+            android:paddingRight="15sp"
+            android:text="@string/searchtext" />
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>
