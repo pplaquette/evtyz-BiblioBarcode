@@ -1,9 +1,15 @@
 package com.evanzheng.bibliobarcode;
 
-public class Author {
-    public String first;
-    public String middle;
-    public String last;
+class Author {
+    String first;
+    String middle;
+    String last;
+
+    Author() {
+        this.first = "";
+        this.middle = "";
+        this.last = "";
+    }
 
     Author(String name) {
         String[] nameOrder = name.split(" ");
@@ -14,9 +20,9 @@ public class Author {
         } else {
             this.middle = "";
             for (int i = 1; i < numNames - 1; i++) {
-                this.middle.concat(nameOrder[i]);
+                this.middle = this.middle.concat(nameOrder[i]);
                 if (i != numNames - 1) {
-                    this.middle.concat(" ");
+                    this.middle = this.middle.concat(" ");
                 }
             }
             this.last = nameOrder[numNames - 1];

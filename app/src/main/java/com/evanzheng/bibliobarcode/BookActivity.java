@@ -27,6 +27,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
 public class BookActivity extends AppCompatActivity {
 
     //Initialize Volley Request Queue
@@ -34,13 +38,13 @@ public class BookActivity extends AppCompatActivity {
 
     //Initialize book
     private Book book;
+    private Map<Integer, Author> authors;
+    private int nextAuthorId;
 
-    //Initialize views and inflater
-    private Toolbar toolbar;
     private LayoutInflater layoutInflater;
     private ViewGroup viewGroup;
     private Button searchButton;
-    private FloatingActionButton saveButton;
+    private ViewGroup fieldAuthorEdit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,15 +52,11 @@ public class BookActivity extends AppCompatActivity {
         setContentView(R.layout.activity_book);
 
         //Set up views
-        saveButton = findViewById(R.id.addToBibliography);
-        saveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                addToBibliography();
-            }
-        });
+        FloatingActionButton saveButton = findViewById(R.id.addToBibliography);
+        saveButton.setOnClickListener(v -> addToBibliography());
 
-        toolbar = findViewById(R.id.toolbar);
+        //Initialize views and inflater
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setTitle("Edit Info:");
         setSupportActionBar(toolbar);
         viewGroup = findViewById(R.id.listFields);
@@ -90,9 +90,11 @@ public class BookActivity extends AppCompatActivity {
                         JSONObject info = response1.getJSONObject("volumeInfo");
                         //Generates a book based on the info
                         book = new Book(info, isbn);
-
+                        authors = new HashMap<>();
+                        for (int i = 0; i < book.authors.size(); i++) {
+                            authors.put(i, book.authors.get(i));
+                        }
                         processBook();
-
                     } catch (JSONException e2) {
                         Log.e("specific book", "Json error");
                     }
@@ -116,11 +118,10 @@ public class BookActivity extends AppCompatActivity {
         searchButton.setVisibility(View.VISIBLE);
     }
 
-    @SuppressLint("SetTextI18n")
     private void showTitle() {
         @SuppressLint("InflateParams") View fieldLayout = layoutInflater.inflate(R.layout.field, null);
         TextView description = fieldLayout.findViewById(R.id.fieldDesc);
-        description.setText("Title:");
+        description.setText(R.string.titledesc);
         EditText titleEdit = fieldLayout.findViewById(R.id.fieldEdit);
         titleEdit.setText(book.title);
         titleEdit.setHint("Title");
@@ -142,13 +143,66 @@ public class BookActivity extends AppCompatActivity {
     }
 
     private void showAuthors() {
+        @SuppressLint("InflateParams") View authorLayout = layoutInflater.inflate(R.layout.field_author, null);
+        TextView description = authorLayout.findViewById(R.id.fieldDesc);
+        description.setText(R.string.authordesc);
+        fieldAuthorEdit = authorLayout.findViewById(R.id.fieldAuthorEdit);
 
+        viewGroup.addView(authorLayout, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        nextAuthorId = book.authors.size();
+        for (int i = 0; i < nextAuthorId; i++) {
+
+            String first = book.authors.get(i).first;
+            String middle = book.authors.get(i).middle;
+            String last = book.authors.get(i).last;
+
+            @SuppressLint("InflateParams") View authorAdd = layoutInflater.inflate(R.layout.author_add, null);
+            EditText firstName = authorAdd.findViewById(R.id.add_first);
+            firstName.setText(first);
+            firstName.addTextChangedListener(new AuthorTextWatcher(i) {
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    Objects.requireNonNull(authors.get(id)).first = s.toString();
+                }
+            });
+
+            EditText middleName = authorAdd.findViewById(R.id.add_middle);
+            middleName.setText(middle);
+            middleName.addTextChangedListener(new AuthorTextWatcher(i) {
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    Objects.requireNonNull(authors.get(id)).middle = s.toString();
+                }
+            });
+
+
+            EditText lastName = authorAdd.findViewById(R.id.add_last);
+            lastName.setText(last);
+            lastName.addTextChangedListener(new AuthorTextWatcher(i) {
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    Objects.requireNonNull(authors.get(id)).last = s.toString();
+                }
+            });
+            fieldAuthorEdit.addView(authorAdd, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+
+            TextView deleteButton = authorAdd.findViewById(R.id.deleteButton);
+            deleteButton.setOnClickListener(new AuthorDeleteListener(i) {
+                @Override
+                public void onClick(View v) {
+                    authors.remove(id);
+                    fieldAuthorEdit.removeView(authorAdd);
+                }
+            });
+        }
     }
 
     private void showPublisher() {
-        View fieldLayout = layoutInflater.inflate(R.layout.field, null);
+        @SuppressLint("InflateParams") View fieldLayout = layoutInflater.inflate(R.layout.field, null);
         TextView description = fieldLayout.findViewById(R.id.fieldDesc);
-        description.setText("Publisher:");
+        description.setText(R.string.publisherdesc);
         EditText titleEdit = fieldLayout.findViewById(R.id.fieldEdit);
         titleEdit.setText(book.publisher);
         titleEdit.setHint("Publisher");
@@ -166,13 +220,14 @@ public class BookActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {
             }
         });
+
         viewGroup.addView(fieldLayout, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
     }
 
     private void showYear() {
-        View fieldLayout = layoutInflater.inflate(R.layout.field, null);
+        @SuppressLint("InflateParams") View fieldLayout = layoutInflater.inflate(R.layout.field, null);
         TextView description = fieldLayout.findViewById(R.id.fieldDesc);
-        description.setText("Year of Publishing:");
+        description.setText(R.string.yeardesc);
         EditText titleEdit = fieldLayout.findViewById(R.id.fieldEdit);
         titleEdit.setText(book.year);
         titleEdit.setHint("Year");
@@ -194,9 +249,9 @@ public class BookActivity extends AppCompatActivity {
     }
 
     private void showCity() {
-        View fieldLayout = layoutInflater.inflate(R.layout.field, null);
+        @SuppressLint("InflateParams") View fieldLayout = layoutInflater.inflate(R.layout.field, null);
         TextView description = fieldLayout.findViewById(R.id.fieldDesc);
-        description.setText("City of Publishing: ");
+        description.setText(R.string.citydesc);
         EditText titleEdit = fieldLayout.findViewById(R.id.fieldEdit);
         titleEdit.setText(book.city);
         titleEdit.setHint("City");
@@ -218,9 +273,9 @@ public class BookActivity extends AppCompatActivity {
     }
 
     private void showState() {
-        View fieldLayout = layoutInflater.inflate(R.layout.field, null);
+        @SuppressLint("InflateParams") View fieldLayout = layoutInflater.inflate(R.layout.field, null);
         TextView description = fieldLayout.findViewById(R.id.fieldDesc);
-        description.setText("State:");
+        description.setText(R.string.statedesc);
         EditText titleEdit = fieldLayout.findViewById(R.id.fieldEdit);
         titleEdit.setText(book.state);
         titleEdit.setHint("State");
@@ -253,6 +308,53 @@ public class BookActivity extends AppCompatActivity {
     }
 
     private void addToBibliography() {
+        //TODO
+    }
+
+    public void addAuthor(View v) {
+        @SuppressLint("InflateParams") View authorAdd = layoutInflater.inflate(R.layout.author_add, null);
+
+        Author newAuthor = new Author();
+
+        authors.put(nextAuthorId, newAuthor);
+
+        EditText firstName = authorAdd.findViewById(R.id.add_first);
+        firstName.addTextChangedListener(new AuthorTextWatcher(nextAuthorId) {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                Objects.requireNonNull(authors.get(id)).first = s.toString();
+            }
+        });
+
+        EditText middleName = authorAdd.findViewById(R.id.add_middle);
+        middleName.addTextChangedListener(new AuthorTextWatcher(nextAuthorId) {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                Objects.requireNonNull(authors.get(id)).middle = s.toString();
+            }
+        });
+
+
+        EditText lastName = authorAdd.findViewById(R.id.add_last);
+        lastName.addTextChangedListener(new AuthorTextWatcher(nextAuthorId) {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                Objects.requireNonNull(authors.get(id)).last = s.toString();
+            }
+        });
+
+        fieldAuthorEdit.addView(authorAdd, fieldAuthorEdit.getChildCount(), new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        TextView deleteButton = authorAdd.findViewById(R.id.deleteButton);
+        deleteButton.setOnClickListener(new AuthorDeleteListener(nextAuthorId) {
+            @Override
+            public void onClick(View v) {
+                authors.remove(id);
+                fieldAuthorEdit.removeView(authorAdd);
+            }
+        });
+
+        nextAuthorId++;
 
     }
 }
