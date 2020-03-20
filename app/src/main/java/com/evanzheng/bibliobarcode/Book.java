@@ -5,17 +5,24 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Book {
+
     public List<Author> authors;
     public String year;
     public String title;
     public String publisher;
     public String city;
     public String state;
+    public String description;
+    public String isbn;
 
-    Book(JSONObject info) {
+    Book(JSONObject info, String isbn) {
+        this.isbn = isbn;
+
         try {
             this.title = info.getString("title");
         } catch (JSONException e) {
@@ -47,15 +54,13 @@ public class Book {
             this.year = null;
         }
 
+        try {
+            this.description = info.getString("description");
+        } catch (JSONException e) {
+            this.description = null;
+        }
+
         this.city = null;
         this.state = null;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
-    public void setState(String state) {
-        this.state = state;
     }
 }

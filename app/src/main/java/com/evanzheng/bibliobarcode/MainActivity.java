@@ -3,12 +3,16 @@ package com.evanzheng.bibliobarcode;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.media.Image;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.Log;
 import android.util.SparseArray;
+import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -51,15 +55,14 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
     //Initializing views
     private PreviewView viewfinder;
     private FloatingActionButton takePhoto;
+    private ProgressBar loading;
 
-    //Initialize Volley Request Queue
-    private RequestQueue requestQueue;
 
     //Initialize book list
     private List<Book> bookList;
 
 
-    //Initializing our callback methods
+    //Initializing our image callback methods
     ImageCapture.OnImageCapturedCallback captureProcess = new ImageCapture.OnImageCapturedCallback() {
         @Override
         public void onCaptureSuccess(@NonNull ImageProxy imageproxy) {
@@ -106,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
         initialize();
     }
 
-    //Written by Superpowered Effects Library
+    // Credit to Superpowered Effects Library
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         // Called when the user answers to the permission dialogs.
@@ -125,27 +128,25 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
         //Set up context
         context = getApplicationContext();
 
-        //Set up detector
+        // Set up detector
         detector = new BarcodeDetector.Builder(context)
                 .setBarcodeFormats(0)
                 .build();
 
-        //Set up request queue
-        requestQueue = Volley.newRequestQueue(context);
 
-        //Set up book list
+
+        // Set up book list
         bookList = new ArrayList<>();
 
 
-        //Set up views
+        // Set up views
         viewfinder = findViewById(R.id.preview_view);
-
         takePhoto = findViewById(R.id.take_photo);
+        loading = findViewById(R.id.loading);
 
-        //Set up click listener
-        takePhoto.setOnClickListener(v -> Take());
 
-        //Set up camera provider, and bind our preview and take functions to it
+
+        // Set up camera provider, and bind our preview and take functions to it
         cameraProviderFuture = ProcessCameraProvider.getInstance(this);
         cameraProviderFuture.addListener(() -> {
             try {
@@ -153,13 +154,19 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
                 bindPreview(cameraProvider);
                 bindTake(cameraProvider);
             } catch (ExecutionException | InterruptedException e) {
-                // No errors need to be handled for this Future.
-                // This should never be reached.
+                // This should never be reached
+                Log.wtf("Camera", "Camera error");
             }
         }, ContextCompat.getMainExecutor(this));
+
+        // Set up click listener
+        takePhoto.setOnClickListener(v -> Take());
+
+        loading.setVisibility(View.INVISIBLE);
+
     }
 
-    //Binding a imagecapture function to our camera
+    // Binding a imageCapture function to our camera
     protected void bindTake(@NonNull ProcessCameraProvider cameraProvider) {
         imageCapture = new ImageCapture.Builder().setTargetRotation(viewfinder.getDisplay().getRotation()).build();
 
@@ -172,6 +179,7 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
     //When a photo is taken:
     protected void Take() {
         imageCapture.takePicture(takePictureExecutor, captureProcess);
+        loading.setVisibility(View.VISIBLE);
     }
 
     //Binding a preview function to our camera
@@ -227,48 +235,14 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
     //Processes the code
     protected int processCode(String code) {
         if (!BarcodeHelper.isISBN(code)) { return 1; }
-        loadBook(code);
+        Intent intent = new Intent(this, BookActivity.class);
+        intent.putExtra("barcode", code);
+        startActivity(intent);
+        loading.setVisibility(View.INVISIBLE);
+
         return 0;
     }
 
-    protected void loadBook(String isbn) {
-        String url = "https://www.googleapis.com/books/v1/volumes?q=isbn:".concat(isbn);
-
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, response -> {
-            try {
-                String specificUrl = response.getJSONArray("items").getJSONObject(0).getString("selfLink");
-                JsonObjectRequest specificRequest = new JsonObjectRequest(Request.Method.GET, specificUrl, null, response1 -> {
-                    try {
-                        JSONObject info = response1.getJSONObject("volumeInfo");
-                        Book newBook = new Book(info);
-                        String publisher = newBook.publisher;
-                        if (publisher != null) {
-                            String cityCountry[] = requestLocation(publisher);
-                            newBook.setCity(cityCountry[0]);
-                            newBook.setState(cityCountry[1]);
-                        }
-                        bookList.add(newBook);
-                    } catch (JSONException e2) {
-                        Log.e("specific book", "Json error");
-                    }
-                }, error1 -> Log.e("specific book", "List error"));
-
-                requestQueue.add(specificRequest);
 
 
-
-
-            } catch (JSONException e) {
-                Log.e("book", "Json error", e);
-            }
-        }, error -> Log.e("book", "List error", error));
-
-
-        requestQueue.add(request);
-    }
-
-    protected String[] requestLocation(String publisher) {
-        String locations[] = new String[2];
-        return locations;
-    }
 }
