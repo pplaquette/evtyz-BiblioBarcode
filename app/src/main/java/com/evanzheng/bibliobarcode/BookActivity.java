@@ -22,6 +22,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,7 +40,7 @@ public class BookActivity extends AppCompatActivity {
     private LayoutInflater layoutInflater;
     private ViewGroup viewGroup;
     private Button searchButton;
-
+    private FloatingActionButton saveButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +48,14 @@ public class BookActivity extends AppCompatActivity {
         setContentView(R.layout.activity_book);
 
         //Set up views
+        saveButton = findViewById(R.id.addToBibliography);
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addToBibliography();
+            }
+        });
+
         toolbar = findViewById(R.id.toolbar);
         setTitle("Edit Info:");
         setSupportActionBar(toolbar);
@@ -241,5 +250,9 @@ public class BookActivity extends AppCompatActivity {
         String keyword = book.publisher.concat(" publisher location");
         intent.putExtra(SearchManager.QUERY, keyword);
         startActivity(intent);
+    }
+
+    private void addToBibliography() {
+
     }
 }
