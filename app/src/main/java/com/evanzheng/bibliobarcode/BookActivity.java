@@ -41,6 +41,7 @@ public class BookActivity extends AppCompatActivity {
     private Map<Integer, Author> authors;
     private int nextAuthorId;
 
+    //Initialize views
     private LayoutInflater layoutInflater;
     private ViewGroup viewGroup;
     private Button searchButton;
@@ -90,6 +91,8 @@ public class BookActivity extends AppCompatActivity {
                         JSONObject info = response1.getJSONObject("volumeInfo");
                         //Generates a book based on the info
                         book = new Book(info, isbn);
+
+                        //Parses authors into a hashmap we can edit on-the-spot
                         authors = new HashMap<>();
                         for (int i = 0; i < book.authors.size(); i++) {
                             authors.put(i, book.authors.get(i));
@@ -108,6 +111,7 @@ public class BookActivity extends AppCompatActivity {
         requestQueue.add(request);
     }
 
+    //Display the book's contents
     protected void processBook() {
         showState();
         showCity();
@@ -118,6 +122,7 @@ public class BookActivity extends AppCompatActivity {
         searchButton.setVisibility(View.VISIBLE);
     }
 
+    //Shows the title fields
     private void showTitle() {
         @SuppressLint("InflateParams") View fieldLayout = layoutInflater.inflate(R.layout.field, null);
         TextView description = fieldLayout.findViewById(R.id.fieldDesc);
@@ -142,6 +147,7 @@ public class BookActivity extends AppCompatActivity {
         viewGroup.addView(fieldLayout, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
     }
 
+    //Shows the author fields
     private void showAuthors() {
         @SuppressLint("InflateParams") View authorLayout = layoutInflater.inflate(R.layout.field_author, null);
         TextView description = authorLayout.findViewById(R.id.fieldDesc);
@@ -151,6 +157,8 @@ public class BookActivity extends AppCompatActivity {
         viewGroup.addView(authorLayout, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         nextAuthorId = book.authors.size();
+
+        //Based on the number of authors:
         for (int i = 0; i < nextAuthorId; i++) {
 
             String first = book.authors.get(i).first;
@@ -199,6 +207,7 @@ public class BookActivity extends AppCompatActivity {
         }
     }
 
+    //Show publisher field
     private void showPublisher() {
         @SuppressLint("InflateParams") View fieldLayout = layoutInflater.inflate(R.layout.field, null);
         TextView description = fieldLayout.findViewById(R.id.fieldDesc);
@@ -224,6 +233,7 @@ public class BookActivity extends AppCompatActivity {
         viewGroup.addView(fieldLayout, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
     }
 
+    //Show year of publication field
     private void showYear() {
         @SuppressLint("InflateParams") View fieldLayout = layoutInflater.inflate(R.layout.field, null);
         TextView description = fieldLayout.findViewById(R.id.fieldDesc);
@@ -248,6 +258,7 @@ public class BookActivity extends AppCompatActivity {
         viewGroup.addView(fieldLayout, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
     }
 
+    //Show city of publication field
     private void showCity() {
         @SuppressLint("InflateParams") View fieldLayout = layoutInflater.inflate(R.layout.field, null);
         TextView description = fieldLayout.findViewById(R.id.fieldDesc);
@@ -272,6 +283,7 @@ public class BookActivity extends AppCompatActivity {
         viewGroup.addView(fieldLayout, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
     }
 
+    //Show state of publication field
     private void showState() {
         @SuppressLint("InflateParams") View fieldLayout = layoutInflater.inflate(R.layout.field, null);
         TextView description = fieldLayout.findViewById(R.id.fieldDesc);
@@ -296,7 +308,7 @@ public class BookActivity extends AppCompatActivity {
         viewGroup.addView(fieldLayout, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
     }
 
-
+    //Search for location of publisher
     public void searchLocation(View view) {
         if (book.publisher == null) {
             return;
@@ -307,15 +319,13 @@ public class BookActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private void addToBibliography() {
-        //TODO
-    }
-
+    //Add an author
     public void addAuthor(View v) {
         @SuppressLint("InflateParams") View authorAdd = layoutInflater.inflate(R.layout.author_add, null);
 
         Author newAuthor = new Author();
 
+        //Add to hashmap
         authors.put(nextAuthorId, newAuthor);
 
         EditText firstName = authorAdd.findViewById(R.id.add_first);
@@ -356,5 +366,11 @@ public class BookActivity extends AppCompatActivity {
 
         nextAuthorId++;
 
+    }
+
+    private void addToBibliography() {
+        book.authorMapToList(authors);
+        MainActivity.database.bookDao().insertBook(book);
+        //TODO
     }
 }

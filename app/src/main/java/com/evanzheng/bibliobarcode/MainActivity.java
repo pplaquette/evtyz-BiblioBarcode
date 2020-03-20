@@ -27,6 +27,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.room.Room;
 
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.barcode.Barcode;
@@ -52,6 +53,10 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
     private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
     private ImageCapture imageCapture;
     private BarcodeDetector detector;
+
+    //Initializing book database
+    public static BookDatabase database;
+
     //Initializing our image callback methods
     ImageCapture.OnImageCapturedCallback captureProcess = new ImageCapture.OnImageCapturedCallback() {
         @Override
@@ -123,6 +128,12 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
         viewfinder = findViewById(R.id.preview_view);
         takePhoto = findViewById(R.id.take_photo);
         loading = findViewById(R.id.loading);
+
+        // Set up database
+        database = Room
+                .databaseBuilder(context, BookDatabase.class, "books")
+                .allowMainThreadQueries()
+                .build();
 
         // Set up camera provider, and bind our preview and take functions to it
         cameraProviderFuture = ProcessCameraProvider.getInstance(this);
@@ -206,6 +217,7 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
                     return 0;
                 }
             }
+            Toast.makeText(getApplicationContext(), "No valid barcode detected, please try again.", Toast.LENGTH_LONG).show();
             return 1;
         }
     }

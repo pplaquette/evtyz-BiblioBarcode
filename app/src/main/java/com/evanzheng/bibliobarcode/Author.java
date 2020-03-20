@@ -1,6 +1,6 @@
 package com.evanzheng.bibliobarcode;
 
-class Author {
+class Author implements Comparable<Author> {
     String first;
     String middle;
     String last;
@@ -16,6 +16,7 @@ class Author {
         this.first = nameOrder[0];
         int numNames = nameOrder.length;
         if (numNames == 2) {
+            this.middle = "";
             this.last = nameOrder[1];
         } else {
             this.middle = "";
@@ -27,5 +28,10 @@ class Author {
             }
             this.last = nameOrder[numNames - 1];
         }
+    }
+
+    @Override
+    public int compareTo(Author author) {
+        return this.last.compareTo(author.last);
     }
 }
