@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 // implementation of "SwipeToDeleteCallback", written by Zachery Osborn at https://medium.com/@zackcosborn/step-by-step-recyclerview-swipe-to-delete-and-undo-7bbae1fce27e
 public class swipeDelete extends ItemTouchHelper.SimpleCallback {
     private BibliographyAdapter swipeAdapter;
+
     swipeDelete(BibliographyAdapter calledAdapter) {
         super(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
         swipeAdapter = calledAdapter;

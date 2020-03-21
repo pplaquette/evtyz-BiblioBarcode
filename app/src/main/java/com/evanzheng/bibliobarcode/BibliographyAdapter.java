@@ -14,27 +14,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 public class BibliographyAdapter extends RecyclerView.Adapter<BibliographyAdapter.BibliographyViewHolder> {
-    static class BibliographyViewHolder extends RecyclerView.ViewHolder {
-        LinearLayout containerView;
-        TextView citationView;
-
-        BibliographyViewHolder(View view) {
-            super(view);
-            this.containerView = view.findViewById(R.id.citation_row);
-            this.citationView = view.findViewById(R.id.citation);
-
-            this.containerView.setOnClickListener(v -> {
-                Context context = v.getContext();
-                Book book = (Book) containerView.getTag();
-                Intent intent = new Intent(context, BookActivity.class);
-                intent.putExtra("isbn", book.isbn);
-
-                context.startActivity(intent);
-            });
-
-        }
-    }
-
     private List<Book> books = MainActivity.database.bookDao().loadBookSources();
 
     @NonNull
@@ -67,6 +46,27 @@ public class BibliographyAdapter extends RecyclerView.Adapter<BibliographyAdapte
     private void reload() {
         books = MainActivity.database.bookDao().loadBookSources();
         notifyDataSetChanged();
+    }
+
+    static class BibliographyViewHolder extends RecyclerView.ViewHolder {
+        LinearLayout containerView;
+        TextView citationView;
+
+        BibliographyViewHolder(View view) {
+            super(view);
+            this.containerView = view.findViewById(R.id.citation_row);
+            this.citationView = view.findViewById(R.id.citation);
+
+            this.containerView.setOnClickListener(v -> {
+                Context context = v.getContext();
+                Book book = (Book) containerView.getTag();
+                Intent intent = new Intent(context, BookActivity.class);
+                intent.putExtra("isbn", book.isbn);
+
+                context.startActivity(intent);
+            });
+
+        }
     }
 
 }

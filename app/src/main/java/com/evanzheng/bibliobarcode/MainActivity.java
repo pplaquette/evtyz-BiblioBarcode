@@ -43,6 +43,8 @@ import java.util.concurrent.Executor;
 
 public class MainActivity extends AppCompatActivity implements CameraXConfig.Provider {
 
+    //Initializing book database
+    public static BookDatabase database;
     //Initializing views
     private PreviewView viewfinder;
     private ProgressBar loading;
@@ -52,10 +54,7 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
     private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
     private ImageCapture imageCapture;
     private BarcodeDetector detector;
-
-    //Initializing book database
-    public static BookDatabase database;
-
+    private Context context;
     //Initializing our image callback methods
     ImageCapture.OnImageCapturedCallback captureProcess = new ImageCapture.OnImageCapturedCallback() {
         @Override
@@ -73,7 +72,6 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
             super.onError(exception);
         }
     };
-    private Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -155,6 +153,7 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
             public void onSwipeTop() {
                 goToBibliography();
             }
+
             @Override
             public void onSwipeBottom() {
                 goToISBNEntry();
@@ -241,7 +240,6 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
         }
         loading.setVisibility(View.INVISIBLE);
     }
-
 
 
 }

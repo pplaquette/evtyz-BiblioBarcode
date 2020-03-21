@@ -114,8 +114,10 @@ public class BookActivity extends AppCompatActivity {
                         returnToCamera();
                     }
                 }, error1 ->
-                {Toast.makeText(this, "We couldn't find this book. Error Code 2B", Toast.LENGTH_LONG).show();
-                returnToCamera();});
+                {
+                    Toast.makeText(this, "We couldn't find this book. Error Code 2B", Toast.LENGTH_LONG).show();
+                    returnToCamera();
+                });
 
                 requestQueue.add(specificRequest);
 
@@ -124,8 +126,10 @@ public class BookActivity extends AppCompatActivity {
                 returnToCamera();
             }
         }, error ->
-        {Toast.makeText(this, "We couldn't find this book. Error Code 1B", Toast.LENGTH_SHORT).show();
-        returnToCamera();});
+        {
+            Toast.makeText(this, "We couldn't find this book. Error Code 1B", Toast.LENGTH_SHORT).show();
+            returnToCamera();
+        });
 
         requestQueue.add(request);
     }

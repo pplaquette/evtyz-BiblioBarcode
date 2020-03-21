@@ -1,5 +1,12 @@
 package com.evanzheng.bibliobarcode;
 
+import androidx.annotation.NonNull;
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.PrimaryKey;
+import androidx.room.TypeConverters;
+
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -9,13 +16,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import androidx.annotation.NonNull;
-import androidx.room.ColumnInfo;
-import androidx.room.Entity;
-import androidx.room.Ignore;
-import androidx.room.PrimaryKey;
-import androidx.room.TypeConverters;
 
 
 @SuppressWarnings("WeakerAccess")
@@ -47,7 +47,6 @@ public class Book {
 
     @ColumnInfo(name = "description")
     public String description;
-
 
 
     public Book(@NotNull String isbn, String title, List<Author> authors, String publisher, String year, String city, String state, String description) {
