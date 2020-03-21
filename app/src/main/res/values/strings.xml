@@ -107,4 +107,7 @@
     <string name="apa">APA</string>
     <string name="chicago">Chicago</string>
     <string name="harvard">Harvard</string>
+    <string name="isbn">ISBN</string>
+    <string name="cancel">Cancel</string>
+    <string name="submit">Submit</string>
 </resources>

@@ -17,11 +17,13 @@ import java.util.List;
 public class BibliographyAdapter extends RecyclerView.Adapter<BibliographyAdapter.BibliographyViewHolder> {
 
     String style;
+    private Context context;
     private List<Book> books = MainActivity.database.bookDao().loadBookSources();
 
-    BibliographyAdapter(String style) {
+    BibliographyAdapter(String style, Context context) {
         super();
         this.style = style;
+        this.context = context;
     }
 
     //Creating a member of the list
@@ -49,11 +51,11 @@ public class BibliographyAdapter extends RecyclerView.Adapter<BibliographyAdapte
 
     //Delete an item
     void deleteItem(int position) {
-        //TODO Popup window confirmation
-
         Book current = books.get(position);
         MainActivity.database.bookDao().deleteBook(current.isbn);
         reload();
+
+
     }
 
     //Reload the list

@@ -2,6 +2,7 @@ package com.evanzheng.bibliobarcode;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -11,6 +12,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -165,8 +168,24 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
     }
 
     private void goToISBNEntry() {
-        //TODO
+        final Dialog isbnEntry = new Dialog(MainActivity.this, R.style.Theme_MaterialComponents_Light_Dialog);
+        isbnEntry.setContentView(R.layout.isbn_dialog);
+        isbnEntry.setTitle("Enter ISBN:");
+
+        EditText entry = isbnEntry.findViewById(R.id.enterISBN);
+        Button submitButton = isbnEntry.findViewById(R.id.submitISBN);
+        submitButton.setOnClickListener(v -> {
+            String code = entry.getText().toString();
+            if (BarcodeHelper.checkCode(code, context)) {
+                goToEditActivity(code);
+            }
+        });
+        Button cancelButton = isbnEntry.findViewById(R.id.cancelISBN);
+        cancelButton.setOnClickListener(v -> isbnEntry.dismiss());
+
+        isbnEntry.show();
     }
+
 
     private void goToEditActivity(String code) {
         Intent intent = new Intent(this, BookActivity.class);

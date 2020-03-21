@@ -1,5 +1,6 @@
 package com.evanzheng.bibliobarcode;
 
+import android.app.AlertDialog;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.View;
@@ -9,6 +10,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -46,10 +49,16 @@ public class BibliographyActivity extends AppCompatActivity {
         //Set up recycler view
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
-        adapter = new BibliographyAdapter(style);
+        adapter = new BibliographyAdapter(style, getBaseContext());
 
         //Set up recycler view touch listener
-        itemTouchHelper = new ItemTouchHelper(new swipeDelete(adapter));
+        itemTouchHelper = new ItemTouchHelper(new swipeDelete(adapter) {
+            @Override
+            public void onSwiped(@NotNull RecyclerView.ViewHolder viewHolder, int direction) {
+                int position = viewHolder.getAdapterPosition();
+                deleteItem(position);
+            }
+        });
         itemTouchHelper.attachToRecyclerView(recyclerView);
 
         //Link everything together
@@ -113,6 +122,16 @@ public class BibliographyActivity extends AppCompatActivity {
         assert targetButton != null;
         targetButton.setTextColor(textC);
         targetButton.setBackgroundResource(bgID);
+    }
+
+    void deleteItem(int position) {
+        new AlertDialog.Builder(BibliographyActivity.this, R.style.Theme_MaterialComponents_Light_Dialog_Alert)
+                .setTitle("Delete Book")
+                .setMessage("Are you sure you want to delete this entry?")
+                .setPositiveButton(android.R.string.yes, (dialog, which) -> adapter.deleteItem(position))
+                .setNegativeButton(android.R.string.no, (dialog, which) -> adapter.reload())
+                .setIcon(android.R.drawable.ic_delete)
+                .show();
     }
 
     //TODO Export function
