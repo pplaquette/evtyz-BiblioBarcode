@@ -45,7 +45,6 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
 
     //Initializing views
     private PreviewView viewfinder;
-    private FloatingActionButton takePhoto;
     private ProgressBar loading;
     //Initializing our executor
     private Executor takePictureExecutor = Runnable::run;
@@ -115,6 +114,7 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
         if (hasAllPermissions) initialize();
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     protected void initialize() {
         //Set up context
         context = getApplicationContext();
@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
 
         // Set up views
         viewfinder = findViewById(R.id.preview_view);
-        takePhoto = findViewById(R.id.take_photo);
+        FloatingActionButton takePhoto = findViewById(R.id.take_photo);
         loading = findViewById(R.id.loading);
 
         // Set up database
@@ -150,9 +150,34 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
 
         // Set up click listener
         takePhoto.setOnClickListener(v -> Take());
+        viewfinder.setOnTouchListener(new OnSwipeTouchListener(this) {
+            @Override
+            public void onSwipeTop() {
+                goToBibliography();
+            }
+            @Override
+            public void onSwipeBottom() {
+                goToISBNEntry();
+            }
+        });
 
         loading.setVisibility(View.INVISIBLE);
 
+    }
+
+    private void goToISBNEntry() {
+        //TODO
+    }
+
+    private void goToEditActivity(String code) {
+        Intent intent = new Intent(this, BookActivity.class);
+        intent.putExtra("barcode", code);
+        startActivity(intent);
+    }
+
+    private void goToBibliography() {
+        Intent intent = new Intent(this, BibliographyActivity.class);
+        startActivity(intent);
     }
 
     // Binding a imageCapture function to our camera
@@ -193,46 +218,30 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
     }
 
     //When an image is captured and converted:
-    protected int processImage(Bitmap image) {
+    protected void processImage(Bitmap image) {
 
         //convert bitmap to frame
         Frame frame = new Frame.Builder().setBitmap(image).build();
 
         //detect barcodes from frame
         SparseArray<Barcode> barcodes = detector.detect(frame);
-
         int size = barcodes.size();
 
         //Check if barcodes exist
         if (size == 0) {
-            return 2;
+            Toast.makeText(context, "No barcode detected.", Toast.LENGTH_LONG).show();
         } else { // Iterate through barcodes
             for (int i = 0; i < size; i++) {
                 Barcode targetCode = barcodes.valueAt(0);
                 String code = targetCode.rawValue;
-                int errorVal = processCode(code);
-
-                //If barcode is valid, quit
-                if (errorVal == 0) {
-                    return 0;
+                if (BarcodeHelper.checkCode(code, context)) {
+                    goToEditActivity(code);
                 }
             }
-            Toast.makeText(getApplicationContext(), "No valid barcode detected, please try again.", Toast.LENGTH_LONG).show();
-            return 1;
         }
+        loading.setVisibility(View.INVISIBLE);
     }
 
-    //Processes the code
-    protected int processCode(String code) {
-        if (!BarcodeHelper.isISBN(code)) {
-            return 1;
-        }
-        Intent intent = new Intent(this, BookActivity.class);
-        intent.putExtra("barcode", code);
-        startActivity(intent);
-        loading.setVisibility(View.INVISIBLE);
-        return 0;
-    }
 
 
 }

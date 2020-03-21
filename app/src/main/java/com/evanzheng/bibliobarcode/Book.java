@@ -7,7 +7,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -108,8 +107,6 @@ public class Book {
         this.city = null;
         this.state = null;
     }
-
-
 
     //Converts hashmap to author list and string
     void authorMapToList(Map<Integer, Author> authorMap) {

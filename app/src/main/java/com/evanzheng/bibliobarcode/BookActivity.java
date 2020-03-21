@@ -7,13 +7,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -40,6 +40,7 @@ public class BookActivity extends AppCompatActivity {
     private Book book;
     private Map<Integer, Author> authors;
     private int nextAuthorId;
+    private boolean isNew;
 
     //Initialize views
     private LayoutInflater layoutInflater;
@@ -71,44 +72,71 @@ public class BookActivity extends AppCompatActivity {
         requestQueue = Volley.newRequestQueue(getApplicationContext());
 
         Intent intent = getIntent();
+
+
         String code = intent.getStringExtra("barcode");
-        loadBook(code);
+        if (code == null) {
+            String isbn = intent.getStringExtra("isbn");
+            book = MainActivity.database.bookDao().loadBook(isbn);
+            isNew = false;
+            processAuthors();
+            processBook();
+        } else {
+            isNew = true;
+            loadBook(code);
+        }
     }
 
     //Loads a book based on the code
     protected void loadBook(String isbn) {
         //First API call
-        String url = "https://www.googleapis.com/books/v1/volumes?q=isbn:".concat(isbn);
+        String url = "https://www.googleapis.com/books/v1/volumes?q=isbn:"
+                .concat(isbn);
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, response -> {
             try {
                 //Gets the first item searched (book that corresponds to ISBN) and then gets the url of the selfLink
-                String specificUrl = response.getJSONArray("items").getJSONObject(0).getString("selfLink");
+                String specificUrl = response
+                        .getJSONArray("items")
+                        .getJSONObject(0).getString("selfLink");
 
                 //Second API call
                 JsonObjectRequest specificRequest = new JsonObjectRequest(Request.Method.GET, specificUrl, null, response1 -> {
                     try {
                         //Gets info from API
-                        JSONObject info = response1.getJSONObject("volumeInfo");
+                        JSONObject info = response1
+                                .getJSONObject("volumeInfo");
                         //Generates a book based on the info
                         book = new Book(info, isbn);
-
-                        //Parses authors into a hashmap we can edit on-the-spot
-                        authors = new HashMap<>();
-                        for (int i = 0; i < book.authors.size(); i++) {
-                            authors.put(i, book.authors.get(i));
-                        }
+                        processAuthors();
                         processBook();
                     } catch (JSONException e2) {
-                        Log.e("specific book", "Json error");
+                        Toast.makeText(this, "We couldn't find this book. Error Code 2A", Toast.LENGTH_LONG).show();
+                        returnToCamera();
                     }
-                }, error1 -> Log.e("specific book", "List error"));
+                }, error1 ->
+                {Toast.makeText(this, "We couldn't find this book. Error Code 2B", Toast.LENGTH_LONG).show();
+                returnToCamera();});
+
                 requestQueue.add(specificRequest);
 
             } catch (JSONException e) {
-                Log.e("book", "Json error", e);
+                Toast.makeText(this, "We couldn't find this book. Error Code 1A", Toast.LENGTH_LONG).show();
+                returnToCamera();
             }
-        }, error -> Log.e("book", "List error", error));
+        }, error ->
+        {Toast.makeText(this, "We couldn't find this book. Error Code 1B", Toast.LENGTH_SHORT).show();
+        returnToCamera();});
+
         requestQueue.add(request);
+    }
+
+    protected void processAuthors() {
+        authors = new HashMap<>();
+        if (book.authors != null) {
+            for (int i = 0; i < book.authors.size(); i++) {
+                authors.put(i, book.authors.get(i));
+            }
+        }
     }
 
     //Display the book's contents
@@ -370,7 +398,17 @@ public class BookActivity extends AppCompatActivity {
 
     private void addToBibliography() {
         book.authorMapToList(authors);
-        MainActivity.database.bookDao().insertBook(book);
-        //TODO
+        if (isNew) {
+            MainActivity.database.bookDao().insertBook(book);
+        } else {
+            MainActivity.database.bookDao().updateBook(book);
+        }
+        Intent leaveIntent = new Intent(this, BibliographyActivity.class);
+        startActivity(leaveIntent);
+    }
+
+    private void returnToCamera() {
+        Intent returnIntent = new Intent(this, MainActivity.class);
+        startActivity(returnIntent);
     }
 }

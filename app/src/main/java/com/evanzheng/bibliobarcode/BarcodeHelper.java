@@ -1,12 +1,15 @@
 package com.evanzheng.bibliobarcode;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.Image;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 
 class BarcodeHelper {
 
@@ -20,7 +23,7 @@ class BarcodeHelper {
     }
 
     //Checks if code is ISBN
-    static boolean isISBN(@NonNull String code) {
+    private static boolean isISBN(@NonNull String code) {
         if (code.length() == 13) {
             boolean weightThree = false;
             int checkSum = 0;
@@ -53,6 +56,30 @@ class BarcodeHelper {
         } else {
             return false;
         }
+    }
+
+    //Checks if an ISBN is already in the SQL database
+    private static boolean notInDatabase(String isbn) {
+        List<String> isbnList = MainActivity.database.bookDao().loadISBN();
+        for (String s : isbnList) {
+            if (isbn.equals(s)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    //Checks if code is valid
+    static boolean checkCode(String code, Context context) {
+        if (!isISBN(code)) {
+            Toast.makeText(context, "We didn't detect a valid ISBN. Please try again.", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if (!notInDatabase(code)) {
+            Toast.makeText(context, "A book with this ISBN is already cited. Please delete it, then try again.", Toast.LENGTH_LONG).show();
+            return false;
+        }
+        return true;
     }
 
 }
