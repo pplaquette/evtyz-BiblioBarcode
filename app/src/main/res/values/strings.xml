@@ -103,4 +103,8 @@
     <string name="yeardesc">Year of Publishing:</string>
     <string name="citydesc">City of Publishing:</string>
     <string name="statedesc">State of Publishing:</string>
+    <string name="mla">MLA</string>
+    <string name="apa">APA</string>
+    <string name="chicago">Chicago</string>
+    <string name="harvard">Harvard</string>
 </resources>
