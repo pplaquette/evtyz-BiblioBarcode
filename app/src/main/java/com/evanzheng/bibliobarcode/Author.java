@@ -6,32 +6,89 @@ class Author implements Comparable<Author> {
     String last;
 
     Author() {
-        this.first = "";
-        this.middle = "";
-        this.last = "";
+        first = "";
+        middle = "";
+        last = "";
     }
 
+    //Parses a name into an author object
     Author(String name) {
+        middle = "";
+        last = "";
+
         String[] nameOrder = name.split(" ");
-        this.first = nameOrder[0];
+        first = nameOrder[0];
         int numNames = nameOrder.length;
         if (numNames == 2) {
-            this.middle = "";
-            this.last = nameOrder[1];
+            middle = "";
+            last = nameOrder[1];
         } else {
-            this.middle = "";
+            middle = "";
             for (int i = 1; i < numNames - 1; i++) {
-                this.middle = this.middle.concat(nameOrder[i]);
-                if (i != numNames - 1) {
-                    this.middle = this.middle.concat(" ");
+                middle = middle.concat(nameOrder[i]);
+                if (i != numNames - 2) {
+                    middle = middle.concat(" ");
                 }
             }
-            this.last = nameOrder[numNames - 1];
+            last = nameOrder[numNames - 1];
+            first = first.trim();
+            middle = middle.trim();
+            last = last.trim();
         }
     }
 
+    String fullName() {
+        String name = first;
+        if (!middle.equals("")) {
+            name = name
+                    .concat(" ")
+                    .concat(String.valueOf(middle.charAt(0)))
+                    .concat(". ");
+        } else {
+            name = name.concat(" ");
+        }
+        name = name.concat(last);
+        return name;
+    }
+
+    String formattedName() {
+        if (last.equals("")) {
+            return first;
+        } else if (middle.equals("")) {
+            return last
+                    .concat(", ")
+                    .concat(first);
+        } else {
+            return last
+                    .concat(", ")
+                    .concat(first)
+                    .concat(" ")
+                    .concat(String.valueOf(middle.charAt(0)))
+                    .concat(".");
+        }
+    }
+
+    String formattedInitializedName() {
+        if (last.equals("")) {
+            return first;
+        } else if (middle.equals("")) {
+            return last
+                    .concat(", ")
+                    .concat(String.valueOf(first.charAt(0)))
+                    .concat(".");
+        } else {
+            return last
+                    .concat(", ")
+                    .concat(String.valueOf(first.charAt(0)))
+                    .concat(".")
+                    .concat(String.valueOf(middle.charAt(0)))
+                    .concat(".");
+        }
+    }
+
+    //Implements a comparable interface, compares last names by alphabetical order
     @Override
     public int compareTo(Author author) {
-        return this.last.compareTo(author.last);
+        return last.compareTo(author.last);
     }
 }

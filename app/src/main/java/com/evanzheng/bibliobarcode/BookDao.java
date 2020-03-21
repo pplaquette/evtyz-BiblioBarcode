@@ -7,6 +7,7 @@ import androidx.room.Update;
 
 import java.util.List;
 
+//A DAO that manages queries to our SQL database
 @Dao
 public interface BookDao {
     @Insert

@@ -5,6 +5,7 @@ import androidx.room.TypeConverter;
 import java.util.ArrayList;
 import java.util.List;
 
+// A class that manages conversions between list<author> and string. Used so we can insert and get books from SQL database.
 @SuppressWarnings("WeakerAccess")
 public class AuthorConverter {
     //converts author list to string for SQL database insertion

@@ -1,6 +1,10 @@
 package com.evanzheng.bibliobarcode;
 
+import android.text.Html;
+import android.text.Spanned;
+
 import androidx.annotation.NonNull;
+import androidx.core.text.HtmlCompat;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
@@ -21,7 +25,7 @@ import java.util.Map;
 @SuppressWarnings("WeakerAccess")
 @Entity(tableName = "books")
 @TypeConverters(AuthorConverter.class)
-public class Book {
+public class Book implements Comparable<Book> {
 
     @PrimaryKey
     @NonNull
@@ -48,6 +52,11 @@ public class Book {
     @ColumnInfo(name = "description")
     public String description;
 
+    @Ignore
+    public String citation;
+
+    @Ignore
+    public Spanned formattedCitation;
 
     public Book(@NotNull String isbn, String title, List<Author> authors, String publisher, String year, String city, String state, String description) {
         this.isbn = isbn;
@@ -66,12 +75,12 @@ public class Book {
         this.isbn = isbn;
 
         try {
-            this.title = info.getString("title");
+            title = info.getString("title");
         } catch (JSONException e) {
-            this.title = null;
+            title = "";
         }
 
-        this.authors = new ArrayList<>();
+        authors = new ArrayList<>();
         try {
             JSONArray rawAuthors = info.getJSONArray("authors");
             int numAuthors = rawAuthors.length();
@@ -80,39 +89,256 @@ public class Book {
                 authors.add(new Author(name));
             }
             Collections.sort(authors);
-        } catch (JSONException e) {
-            this.authors = null;
+        } catch (JSONException ignored) {
         }
 
         try {
-            this.publisher = info.getString("publisher");
+            publisher = info.getString("publisher");
         } catch (JSONException e) {
-            this.publisher = null;
+            publisher = "";
+
         }
 
         try {
-            this.year = info.getString("publishedDate");
-            this.year = this.year.substring(0, Math.min(this.year.length(), 4));
+            year = info.getString("publishedDate");
+            year = year.substring(0, Math.min(year.length(), 4));
         } catch (JSONException e) {
-            this.year = null;
+            year = "";
         }
 
         try {
-            this.description = info.getString("description");
+            description = info.getString("description");
         } catch (JSONException e) {
-            this.description = null;
+            description = "";
         }
 
-        this.city = null;
-        this.state = null;
+        city = "";
+        state = "";
     }
 
     //Converts hashmap to author list and string
     void authorMapToList(Map<Integer, Author> authorMap) {
-        this.authors = new ArrayList<>();
+        authors = new ArrayList<>();
         for (int i : authorMap.keySet()) {
-            this.authors.add(authorMap.get(i));
+            authors.add(authorMap.get(i));
         }
         Collections.sort(authors);
+    }
+
+
+    void cite(String style) {
+        formattedCitation = HtmlCompat.fromHtml("", HtmlCompat.FROM_HTML_MODE_LEGACY);
+        citation = "";
+        String authorCite;
+        String titleCite;
+        String publisherCite;
+        String yearCite;
+        String cityCite;
+        String stateCite;
+
+
+        switch (style) {
+            case "MLA":
+                authorCite = "";
+                if (authors.size() != 0) {
+                    authorCite = authorCite.concat(authors.get(0).formattedName());
+                    for (int i = 1; i < authors.size(); i++) {
+                        if (i == authors.size() - 1) {
+                            authorCite = authorCite.concat(", and ");
+                        } else {
+                            authorCite = authorCite.concat(", ");
+                        }
+                        authorCite = authorCite.concat(authors.get(i).fullName());
+                    }
+                    authorCite = authorCite.concat(". ");
+                }
+
+                titleCite = title.concat(". ");
+
+                if (publisher.equals("")) {
+                    publisherCite = "n.p., ";
+                } else {
+                    publisherCite = publisher.concat(", ");
+                }
+
+                if (year.equals("")) {
+                    yearCite = "n.d.";
+                } else {
+                    yearCite = year.concat(".");
+                }
+
+                citation = authorCite
+                        .concat(titleCite)
+                        .concat(publisherCite)
+                        .concat(yearCite);
+
+                formattedCitation = HtmlCompat.fromHtml(authorCite
+                        .concat("<i>")
+                        .concat(titleCite)
+                        .concat("</i>")
+                        .concat(publisherCite)
+                        .concat(yearCite), HtmlCompat.FROM_HTML_MODE_LEGACY);
+                break;
+
+            case "APA":
+                authorCite = "";
+                for (int i = 0; i < authors.size(); i++) {
+                    authorCite = authorCite.concat(authors.get(i).formattedInitializedName());
+                    if (i != authors.size() - 1) {
+                        authorCite = authorCite.concat(", ");
+                    }
+                    if (i == authors.size() - 2) {
+                        authorCite = authorCite.concat(" & ");
+                    }
+                }
+
+                yearCite = " (";
+                if (year.equals("")) {
+                    yearCite = yearCite.concat("n.d.");
+                } else {
+                    yearCite = yearCite.concat(year);
+                }
+                yearCite = yearCite.concat("). ");
+
+                titleCite = title.concat(". ");
+
+                if (city.equals("") || state.equals("")) {
+                    cityCite = "N.p.: ";
+                    stateCite = "";
+                } else {
+                    cityCite = city.concat(", ");
+                    stateCite = state.concat(": ");
+                }
+
+                if (publisher.equals("")) {
+                    publisherCite = "n.p.";
+                } else {
+                    publisherCite = publisher.concat(".");
+                }
+
+                formattedCitation = HtmlCompat.fromHtml(authorCite
+                        .concat(yearCite)
+                        .concat("<i>")
+                        .concat(titleCite)
+                        .concat("</i>")
+                        .concat(cityCite)
+                        .concat(stateCite)
+                        .concat(publisherCite), HtmlCompat.FROM_HTML_MODE_LEGACY);
+
+                citation = authorCite
+                        .concat(yearCite)
+                        .concat(titleCite)
+                        .concat(cityCite)
+                        .concat(stateCite)
+                        .concat(publisherCite);
+
+                break;
+            case "Chicago":
+                authorCite = "";
+                if (authors.size() != 0) {
+                    authorCite = authorCite.concat(authors.get(0).formattedName());
+                    for (int i = 1; i < authors.size(); i++) {
+                        if (i == authors.size() - 1) {
+                            authorCite = authorCite.concat(", and ");
+                        } else {
+                            authorCite = authorCite.concat(", ");
+                        }
+                        authorCite = authorCite.concat(authors.get(i).fullName());
+                    }
+                    authorCite = authorCite.concat(". ");
+                }
+
+                titleCite = title.concat(". ");
+
+                if (city.equals("")) {
+                    cityCite = "N.p.: ";
+                } else {
+                    cityCite = city.concat(": ");
+                }
+
+                if (publisher.equals("")) {
+                    publisherCite = "n.p., ";
+                } else {
+                    publisherCite = publisher.concat(", ");
+                }
+
+                if (year.equals("")) {
+                    yearCite = "n.d.";
+                } else {
+                    yearCite = year.concat(".");
+                }
+
+                formattedCitation = HtmlCompat.fromHtml(authorCite
+                        .concat("<i>")
+                        .concat(titleCite)
+                        .concat("</i>")
+                        .concat(cityCite)
+                        .concat(publisherCite)
+                        .concat(yearCite), HtmlCompat.FROM_HTML_MODE_LEGACY);
+
+                citation = authorCite
+                        .concat(titleCite)
+                        .concat(cityCite)
+                        .concat(publisherCite)
+                        .concat(yearCite);
+
+                break;
+            case "Harvard":
+                authorCite = "";
+                for (int i = 0; i < authors.size(); i++) {
+                    authorCite = authorCite.concat(authors.get(i).formattedInitializedName()).concat(", ");
+                    if (i == authors.size() - 2) {
+                        authorCite = authorCite.concat(" and ");
+                    }
+                }
+
+                if (year.equals("")) {
+                    yearCite = "n.d. ";
+                } else {
+                    yearCite = year.concat(". ");
+                }
+
+                titleCite = title.concat(". ");
+
+                if (city.equals("")) {
+                    cityCite = "N.p.: ";
+                } else {
+                    cityCite = city.concat(": ");
+                }
+
+                if (publisher.equals("")) {
+                    publisherCite = "n.p.";
+                } else {
+                    publisherCite = publisher.concat(".");
+                }
+
+                formattedCitation = HtmlCompat.fromHtml(authorCite
+                        .concat(yearCite)
+                        .concat("<i>")
+                        .concat(titleCite)
+                        .concat("</i>")
+                        .concat(cityCite)
+                        .concat(publisherCite), HtmlCompat.FROM_HTML_MODE_LEGACY);
+
+                citation = authorCite
+                        .concat(yearCite)
+                        .concat(titleCite)
+                        .concat(cityCite)
+                        .concat(publisherCite);
+
+                break;
+            default:
+                formattedCitation = Html.fromHtml(title.concat(" Citation error"));
+                break;
+        }
+    }
+
+    Spanned getCitation() {
+        return formattedCitation;
+    }
+
+    @Override
+    public int compareTo(Book book) {
+        return citation.compareTo(book.citation);
     }
 }

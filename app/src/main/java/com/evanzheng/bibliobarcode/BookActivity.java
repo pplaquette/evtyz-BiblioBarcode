@@ -136,7 +136,7 @@ public class BookActivity extends AppCompatActivity {
 
     protected void processAuthors() {
         authors = new HashMap<>();
-        if (book.authors != null) {
+        if (book.authors.size() != 0) {
             for (int i = 0; i < book.authors.size(); i++) {
                 authors.put(i, book.authors.get(i));
             }
@@ -305,7 +305,7 @@ public class BookActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                book.state = s.toString();
+                book.city = s.toString();
             }
 
             @Override
@@ -342,7 +342,7 @@ public class BookActivity extends AppCompatActivity {
 
     //Search for location of publisher
     public void searchLocation(View view) {
-        if (book.publisher == null) {
+        if (book.publisher.equals("")) {
             return;
         }
         Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
@@ -400,17 +400,24 @@ public class BookActivity extends AppCompatActivity {
 
     }
 
+    //Add to bibliography function
     private void addToBibliography() {
+        //Converts hashmap back to authorlist
         book.authorMapToList(authors);
+
+        //Inserts or updates a book
         if (isNew) {
             MainActivity.database.bookDao().insertBook(book);
         } else {
             MainActivity.database.bookDao().updateBook(book);
         }
+
+        //Goes to next activity
         Intent leaveIntent = new Intent(this, BibliographyActivity.class);
         startActivity(leaveIntent);
     }
 
+    //Returns to camera activity
     private void returnToCamera() {
         Intent returnIntent = new Intent(this, MainActivity.class);
         startActivity(returnIntent);
