@@ -25,6 +25,8 @@ This app was created as part of a CS50x final project, and was written using Jav
 
 [Android Volley HTTP Library](https://developer.android.com/training/volley)
 
+[Application Crash Reports for Android](https://github.com/ACRA/acra)
+
 [Google Books API](https://developers.google.com/books/docs/overview)
 
 [Google Mobile Vision Barcode API](https://developers.google.com/vision/android/barcodes-overview)
