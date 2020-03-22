@@ -12,6 +12,7 @@ import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.SparseArray;
+import android.view.Surface;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -250,7 +251,12 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
 
     // Binding a imageCapture function to our camera
     protected void bindTake(@NonNull ProcessCameraProvider cameraProvider) {
-        imageCapture = new ImageCapture.Builder().setTargetRotation(viewfinder.getDisplay().getRotation()).build();
+
+        try {
+            imageCapture = new ImageCapture.Builder().setTargetRotation(viewfinder.getDisplay().getRotation()).build();
+        } catch (NullPointerException e) {
+            imageCapture = new ImageCapture.Builder().setTargetRotation(Surface.ROTATION_0).build();
+        }
 
         CameraSelector cameraSelector = new CameraSelector.Builder()
                 .requireLensFacing(CameraSelector.LENS_FACING_BACK)
