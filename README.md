@@ -1,6 +1,6 @@
-# BiblioBarcode
+# Biblio Barcode
 
-Written and built by Evan Zheng.
+Built and designed by Evan Zheng.
 
 BiblioBarcode is an Android app that scans ISBN barcodes on books and formats them into a bibliography in MLA, APA, Chicago, or Harvard style.
 
@@ -32,7 +32,9 @@ This app was created as part of a CS50x final project, and was written using Jav
 
 # Download Links
 
-No APK releases yet. 
+[Google Drive Download Link](https://drive.google.com/file/d/1enPOnjjho_Nqh5FSjLK7dxPgWcaLpsSx/view?usp=sharing)
+
+Or, download from app/release/app-release.apk
 
 # License
 
