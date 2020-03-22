@@ -1,97 +1,134 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     tools:context=".BibliographyActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:padding="5dp">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:foreground="?android:attr/selectableItemBackground">
-            <TextView
-                android:id="@+id/MLA"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="5dp">
+
+            <FrameLayout
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:background="@drawable/pill_deactivated"
-                android:clickable="true"
-                android:focusable="true"
-                android:onClick="setMLA"
-                android:padding="15sp"
-                android:text="@string/mla"
-                android:textSize="20sp" />
-        </FrameLayout>
-        <Space
-            android:layout_width="5sp"
-            android:layout_height="match_parent" />
-        <FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:foreground="?android:attr/selectableItemBackground">
-            <TextView
-                android:id="@+id/APA"
+                android:foreground="?android:attr/selectableItemBackground">
+
+                <TextView
+                    android:id="@+id/MLA"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/pill_deactivated"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:onClick="setMLA"
+                    android:padding="15sp"
+                    android:text="@string/mla"
+                    android:textSize="20sp" />
+            </FrameLayout>
+
+            <Space
+                android:layout_width="5sp"
+                android:layout_height="match_parent" />
+
+            <FrameLayout
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:background="@drawable/pill_deactivated"
-                android:clickable="true"
-                android:focusable="true"
-                android:onClick="setAPA"
-                android:padding="15sp"
-                android:text="@string/apa"
-                android:textSize="20sp" />
-        </FrameLayout>
-        <Space
-            android:layout_width="5sp"
-            android:layout_height="match_parent" />
-        <FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:foreground="?android:attr/selectableItemBackground">
-            <TextView
-                android:id="@+id/Chicago"
+                android:foreground="?android:attr/selectableItemBackground">
+
+                <TextView
+                    android:id="@+id/APA"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/pill_deactivated"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:onClick="setAPA"
+                    android:padding="15sp"
+                    android:text="@string/apa"
+                    android:textSize="20sp" />
+            </FrameLayout>
+
+            <Space
+                android:layout_width="5sp"
+                android:layout_height="match_parent" />
+
+            <FrameLayout
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:background="@drawable/pill_deactivated"
-                android:clickable="true"
-                android:focusable="true"
-                android:onClick="setChicago"
-                android:padding="15sp"
-                android:text="@string/chicago"
-                android:textSize="20sp" />
-        </FrameLayout>
-        <Space
-            android:layout_width="5sp"
-            android:layout_height="match_parent" />
-        <FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:foreground="?android:attr/selectableItemBackground">
-            <TextView
-                android:id="@+id/Harvard"
+                android:foreground="?android:attr/selectableItemBackground">
+
+                <TextView
+                    android:id="@+id/Chicago"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/pill_deactivated"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:onClick="setChicago"
+                    android:padding="15sp"
+                    android:text="@string/chicago"
+                    android:textSize="20sp" />
+            </FrameLayout>
+
+            <Space
+                android:layout_width="5sp"
+                android:layout_height="match_parent" />
+
+            <FrameLayout
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:background="@drawable/pill_deactivated"
-                android:clickable="true"
-                android:focusable="true"
-                android:onClick="setHarvard"
-                android:padding="15sp"
-                android:text="@string/harvard"
-                android:textSize="20sp" />
-        </FrameLayout>
+                android:foreground="?android:attr/selectableItemBackground">
+
+                <TextView
+                    android:id="@+id/Harvard"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/pill_deactivated"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:onClick="setHarvard"
+                    android:padding="15sp"
+                    android:text="@string/harvard"
+                    android:textSize="20sp" />
+            </FrameLayout>
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="vertical" />
+
     </LinearLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scrollbars="vertical" />
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="20sp"
+        android:backgroundTint="@color/colorPrimary"
+        android:onClick="export"
+        android:tint="@color/colorAccent"
+        app:srcCompat="@android:drawable/ic_input_add" />
 
-
-</LinearLayout>
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="20sp"
+        android:layout_marginBottom="100sp"
+        android:backgroundTint="@color/colorPrimary"
+        android:onClick="copyToClipboard"
+        android:tint="@color/colorAccent"
+        app:srcCompat="@android:drawable/ic_input_add" />
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

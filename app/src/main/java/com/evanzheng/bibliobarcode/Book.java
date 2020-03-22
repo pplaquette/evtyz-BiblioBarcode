@@ -1,6 +1,5 @@
 package com.evanzheng.bibliobarcode;
 
-import android.text.Html;
 import android.text.Spanned;
 
 import androidx.annotation.NonNull;
@@ -56,7 +55,7 @@ public class Book implements Comparable<Book> {
     public String citation;
 
     @Ignore
-    public Spanned formattedCitation;
+    public String rawFormatCitation;
 
     public Book(@NotNull String isbn, String title, List<Author> authors, String publisher, String year, String city, String state, String description) {
         this.isbn = isbn;
@@ -127,7 +126,7 @@ public class Book implements Comparable<Book> {
 
 
     void cite(String style) {
-        formattedCitation = HtmlCompat.fromHtml("", HtmlCompat.FROM_HTML_MODE_LEGACY);
+        rawFormatCitation = "";
         citation = "";
         String authorCite;
         String titleCite;
@@ -172,12 +171,12 @@ public class Book implements Comparable<Book> {
                         .concat(publisherCite)
                         .concat(yearCite);
 
-                formattedCitation = HtmlCompat.fromHtml(authorCite
+                rawFormatCitation = authorCite
                         .concat("<i>")
                         .concat(titleCite)
                         .concat("</i>")
                         .concat(publisherCite)
-                        .concat(yearCite), HtmlCompat.FROM_HTML_MODE_LEGACY);
+                        .concat(yearCite);
                 break;
 
             case "APA":
@@ -216,14 +215,14 @@ public class Book implements Comparable<Book> {
                     publisherCite = publisher.concat(".");
                 }
 
-                formattedCitation = HtmlCompat.fromHtml(authorCite
+                rawFormatCitation = authorCite
                         .concat(yearCite)
                         .concat("<i>")
                         .concat(titleCite)
                         .concat("</i>")
                         .concat(cityCite)
                         .concat(stateCite)
-                        .concat(publisherCite), HtmlCompat.FROM_HTML_MODE_LEGACY);
+                        .concat(publisherCite);
 
                 citation = authorCite
                         .concat(yearCite)
@@ -268,13 +267,13 @@ public class Book implements Comparable<Book> {
                     yearCite = year.concat(".");
                 }
 
-                formattedCitation = HtmlCompat.fromHtml(authorCite
+                rawFormatCitation = authorCite
                         .concat("<i>")
                         .concat(titleCite)
                         .concat("</i>")
                         .concat(cityCite)
                         .concat(publisherCite)
-                        .concat(yearCite), HtmlCompat.FROM_HTML_MODE_LEGACY);
+                        .concat(yearCite);
 
                 citation = authorCite
                         .concat(titleCite)
@@ -312,13 +311,13 @@ public class Book implements Comparable<Book> {
                     publisherCite = publisher.concat(".");
                 }
 
-                formattedCitation = HtmlCompat.fromHtml(authorCite
+                rawFormatCitation = authorCite
                         .concat(yearCite)
                         .concat("<i>")
                         .concat(titleCite)
                         .concat("</i>")
                         .concat(cityCite)
-                        .concat(publisherCite), HtmlCompat.FROM_HTML_MODE_LEGACY);
+                        .concat(publisherCite);
 
                 citation = authorCite
                         .concat(yearCite)
@@ -328,13 +327,13 @@ public class Book implements Comparable<Book> {
 
                 break;
             default:
-                formattedCitation = Html.fromHtml(title.concat(" Citation error"));
+                rawFormatCitation = title.concat(" Citation error");
                 break;
         }
     }
 
     Spanned getCitation() {
-        return formattedCitation;
+        return HtmlCompat.fromHtml(rawFormatCitation, HtmlCompat.FROM_HTML_MODE_LEGACY);
     }
 
     @Override

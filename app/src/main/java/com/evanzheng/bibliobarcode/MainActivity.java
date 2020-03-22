@@ -83,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
 
         // Checking permissions, credit to Superpowered Effects Library for permission algorithm
         String[] permissions = {
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.CAMERA,
                 Manifest.permission.INTERNET
         };
@@ -168,7 +169,7 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
     }
 
     private void goToISBNEntry() {
-        final Dialog isbnEntry = new Dialog(MainActivity.this, R.style.Theme_MaterialComponents_Light_Dialog);
+        Dialog isbnEntry = new Dialog(MainActivity.this, R.style.Theme_MaterialComponents_Light_Dialog);
         isbnEntry.setContentView(R.layout.isbn_dialog);
         isbnEntry.setTitle("Enter ISBN:");
 

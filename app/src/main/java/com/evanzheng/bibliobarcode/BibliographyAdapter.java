@@ -17,13 +17,11 @@ import java.util.List;
 public class BibliographyAdapter extends RecyclerView.Adapter<BibliographyAdapter.BibliographyViewHolder> {
 
     String style;
-    private Context context;
-    private List<Book> books = MainActivity.database.bookDao().loadBookSources();
+    List<Book> books = MainActivity.database.bookDao().loadBookSources();
 
-    BibliographyAdapter(String style, Context context) {
+    BibliographyAdapter(String style) {
         super();
         this.style = style;
-        this.context = context;
     }
 
     //Creating a member of the list

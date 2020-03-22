@@ -1,18 +1,29 @@
 package com.evanzheng.bibliobarcode;
 
 import android.app.AlertDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.text.Spanned;
+import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.text.HtmlCompat;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -24,6 +35,8 @@ public class BibliographyActivity extends AppCompatActivity {
     String style;
     Map<String, Integer> styleButtons;
     BibliographyAdapter adapter;
+    ClipboardManager clipboard;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +54,8 @@ public class BibliographyActivity extends AppCompatActivity {
         styleButtons.put("Chicago", R.id.Chicago);
         styleButtons.put("Harvard", R.id.Harvard);
 
+        //Set up clipboard
+        clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
 
         //Set up header
         Objects.requireNonNull(getSupportActionBar()).setTitle("Bibliography");
@@ -49,10 +64,10 @@ public class BibliographyActivity extends AppCompatActivity {
         //Set up recycler view
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
-        adapter = new BibliographyAdapter(style, getBaseContext());
+        adapter = new BibliographyAdapter(style);
 
         //Set up recycler view touch listener
-        itemTouchHelper = new ItemTouchHelper(new swipeDelete(adapter) {
+        itemTouchHelper = new ItemTouchHelper(new SwipeDeleteListener(adapter) {
             @Override
             public void onSwiped(@NotNull RecyclerView.ViewHolder viewHolder, int direction) {
                 int position = viewHolder.getAdapterPosition();
@@ -134,6 +149,41 @@ public class BibliographyActivity extends AppCompatActivity {
                 .show();
     }
 
-    //TODO Export function
+    public void copyToClipboard(View view) {
+        String rawBibliography = "";
+        for (Book book : adapter.books) {
+            rawBibliography = rawBibliography.concat(book.citation).concat("\n");
+        }
+        ClipData clip = ClipData.newPlainText("Bibliography", rawBibliography);
+        clipboard.setPrimaryClip(clip);
+        Toast.makeText(this, "Copied! Remember to italicize your titles in your document!", Toast.LENGTH_LONG).show();
+    }
 
+
+    public void export(View view) {
+        String rawBibliography = "";
+        for (Book book : adapter.books) {
+            rawBibliography = rawBibliography.concat(book.rawFormatCitation).concat("<br>");
+        }
+        Spanned span = HtmlCompat.fromHtml(rawBibliography, HtmlCompat.FROM_HTML_MODE_LEGACY);
+        String htmlBibliography = HtmlCompat.toHtml(span, HtmlCompat.TO_HTML_PARAGRAPH_LINES_CONSECUTIVE);
+
+        //Code below is modified from Piyush Malaviya's saveHtmlFile() at https://stackoverflow.com/questions/31553402/save-string-as-html-file-android
+        String path = Objects.requireNonNull(this.getExternalFilesDir(null)).getPath();
+        Log.e("path: ", path);
+
+        String fileName = DateFormat.format("dd_MM_yyyy_hh:mm:ss", System.currentTimeMillis()).toString().concat("_Bibliography.html");
+        File file = new File(path, fileName);
+
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            byte[] data = htmlBibliography.getBytes();
+            out.write(data);
+            out.close();
+            Toast.makeText(this, "Bibliography saved at ".concat(path).concat("/").concat(fileName), Toast.LENGTH_LONG).show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
 }

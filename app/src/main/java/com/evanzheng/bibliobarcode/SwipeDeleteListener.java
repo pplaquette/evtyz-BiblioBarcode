@@ -6,10 +6,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.jetbrains.annotations.NotNull;
 
 // implementation of "SwipeToDeleteCallback", written by Zachery Osborn at https://medium.com/@zackcosborn/step-by-step-recyclerview-swipe-to-delete-and-undo-7bbae1fce27e
-public abstract class swipeDelete extends ItemTouchHelper.SimpleCallback {
+public abstract class SwipeDeleteListener extends ItemTouchHelper.SimpleCallback {
     private BibliographyAdapter swipeAdapter;
 
-    swipeDelete(BibliographyAdapter calledAdapter) {
+    SwipeDeleteListener(BibliographyAdapter calledAdapter) {
         super(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
         swipeAdapter = calledAdapter;
     }
