@@ -47,22 +47,31 @@
         app:layout_constraintRight_toRightOf="parent"
         app:srcCompat="@drawable/camera_iris" />
 
-    <TextView
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:lineSpacingMultiplier="1.5"
-        android:onClick="listenISBNPrompt"
-        android:padding="20sp"
-        android:shadowColor="@color/text_shadow"
-        android:shadowDx="2"
-        android:shadowDy="2"
-        android:shadowRadius="1"
-        android:text="@string/manualISBN"
-        android:textAlignment="center"
-        android:textColor="@color/colorWhite"
-        android:textSize="20sp"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_margin="@dimen/fab_margin"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/bibliographyButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/colorWhite"
+            android:onClick="listenBibliographyPrompt"
+            android:src="@drawable/format_list_bulleted_square"
+            android:tint="@color/darkText" />
+
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/manualButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/colorWhite"
+            android:onClick="listenISBNPrompt"
+            android:src="@drawable/pencil"
+            android:tint="@color/darkText" />
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

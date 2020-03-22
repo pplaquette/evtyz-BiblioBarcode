@@ -3,9 +3,12 @@ package com.evanzheng.bibliobarcode;
 
 import android.annotation.SuppressLint;
 import android.app.SearchManager;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -15,6 +18,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.widget.NestedScrollView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -29,10 +33,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import uk.co.deanwild.materialshowcaseview.MaterialShowcaseSequence;
+import uk.co.deanwild.materialshowcaseview.ShowcaseConfig;
+
 public class BookActivity extends AppCompatActivity {
 
     //Initialize Volley Request Queue
     private RequestQueue requestQueue;
+
+    //Initialize shared preferences
+    private boolean ranBefore;
+    private SharedPreferences sharedPref;
+
 
     //Initialize book
     private Book book;
@@ -46,6 +58,8 @@ public class BookActivity extends AppCompatActivity {
     private ViewGroup viewGroup;
     private Button searchButton;
     private ViewGroup fieldAuthorEdit;
+    private FloatingActionButton saveButton;
+    private NestedScrollView scrollView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,16 +67,20 @@ public class BookActivity extends AppCompatActivity {
         setContentView(R.layout.activity_book);
 
         //Set up views
-        FloatingActionButton saveButton = findViewById(R.id.addToBibliography);
+        saveButton = findViewById(R.id.addToBibliography);
         saveButton.setOnClickListener(v -> addToBibliography());
 
         //Initialize views and inflater
         Toolbar toolbar = findViewById(R.id.toolbar);
         setTitle("Edit Info:");
         setSupportActionBar(toolbar);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+
         viewGroup = findViewById(R.id.listFields);
         searchButton = findViewById(R.id.searchLocation);
         searchButton.setVisibility(View.INVISIBLE);
+        scrollView = findViewById(R.id.scrollview);
 
         //Set up layout inflater
         layoutInflater = getLayoutInflater();
@@ -85,6 +103,37 @@ public class BookActivity extends AppCompatActivity {
             isNew = true;
             loadBook(code);
         }
+
+        sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+
+        ranBefore = sharedPref.getBoolean("edit", false);
+
+        if (!ranBefore) {
+            runTutorial();
+        }
+
+    }
+
+    private void runTutorial() {
+        ShowcaseConfig tutorialConfig = new ShowcaseConfig();
+        tutorialConfig.setDelay(500);
+
+        MaterialShowcaseSequence tutorial = new MaterialShowcaseSequence(this, "smthdif2");
+
+        tutorial.setConfig(tutorialConfig);
+        tutorial.addSequenceItem(saveButton, "Save your book by pressing this button", "OKAY");
+        tutorial.start();
+
+        sharedPref.edit().putBoolean("edit", true).apply();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+        return false;
     }
 
     //Loads a book based on the code

@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.media.Image;
@@ -14,6 +15,7 @@ import android.util.SparseArray;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -41,16 +43,28 @@ import com.google.common.util.concurrent.ListenableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
+import uk.co.deanwild.materialshowcaseview.MaterialShowcaseSequence;
+import uk.co.deanwild.materialshowcaseview.ShowcaseConfig;
+
 
 //Created by Evan Zheng
 
 public class MainActivity extends AppCompatActivity implements CameraXConfig.Provider {
+
+
+    private boolean ranBefore;
+    private SharedPreferences sharedPref;
 
     //Initializing book database
     public static BookDatabase database;
     //Initializing views
     private PreviewView viewfinder;
     private ProgressBar loading;
+    private FloatingActionButton takePhoto;
+    private ImageButton bibliographyButton;
+    private ImageButton manualButton;
+
+
     //Initializing our executor
     private Executor takePictureExecutor = Runnable::run;
     //Initializing camera and barcode objects
@@ -128,8 +142,11 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
 
         // Set up views
         viewfinder = findViewById(R.id.preview_view);
-        FloatingActionButton takePhoto = findViewById(R.id.take_photo);
+        takePhoto = findViewById(R.id.take_photo);
         loading = findViewById(R.id.loading);
+        manualButton = findViewById(R.id.manualButton);
+        bibliographyButton = findViewById(R.id.bibliographyButton);
+
 
         // Set up database
         database = Room
@@ -166,10 +183,37 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
 
         loading.setVisibility(View.INVISIBLE);
 
+        sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+
+        ranBefore = sharedPref.getBoolean("camera", false);
+
+        if (!ranBefore) {
+            runTutorial();
+        }
     }
+
+    private void runTutorial() {
+        ShowcaseConfig tutorialConfig = new ShowcaseConfig();
+        tutorialConfig.setDelay(500);
+
+        MaterialShowcaseSequence tutorial = new MaterialShowcaseSequence(this, "smthdif");
+
+        tutorial.setConfig(tutorialConfig);
+        tutorial.addSequenceItem(takePhoto, "Scan your barcodes by tapping this button", "OKAY");
+        tutorial.addSequenceItem(manualButton, "You can add ISBNs manually by tapping this button, or swiping down", "OKAY");
+        tutorial.addSequenceItem(bibliographyButton, "You can view your bibliographies by tapping this button, or swiping up", "OKAY");
+        tutorial.start();
+        sharedPref.edit().putBoolean("camera", true).apply();
+
+    }
+
 
     public void listenISBNPrompt(View v) {
         goToISBNEntry();
+    }
+
+    public void listenBibliographyPrompt(View v) {
+        goToBibliography();
     }
 
     private void goToISBNEntry() {

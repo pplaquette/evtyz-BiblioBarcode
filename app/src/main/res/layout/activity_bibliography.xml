@@ -115,6 +115,7 @@
     </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/export_button"
         android:backgroundTint="@color/colorAccent"
         android:tint="@color/colorWhite"
         android:layout_width="wrap_content"
@@ -126,6 +127,7 @@
         app:srcCompat="@drawable/content_save" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/copy_button"
         android:backgroundTint="@color/colorAccent"
         android:tint="@color/colorWhite"
         android:layout_width="wrap_content"

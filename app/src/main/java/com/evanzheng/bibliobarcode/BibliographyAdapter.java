@@ -84,7 +84,6 @@ public class BibliographyAdapter extends RecyclerView.Adapter<BibliographyAdapte
 
                 context.startActivity(intent);
             });
-
         }
     }
 

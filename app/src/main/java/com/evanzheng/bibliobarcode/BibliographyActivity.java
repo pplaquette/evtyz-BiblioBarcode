@@ -20,6 +20,8 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -29,6 +31,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import uk.co.deanwild.materialshowcaseview.MaterialShowcaseSequence;
+import uk.co.deanwild.materialshowcaseview.ShowcaseConfig;
+
 public class BibliographyActivity extends AppCompatActivity {
 
     //Set up constants
@@ -37,17 +42,24 @@ public class BibliographyActivity extends AppCompatActivity {
     Map<String, Integer> styleButtons;
     BibliographyAdapter adapter;
     ClipboardManager clipboard;
-    SharedPreferences previousStyle;
+    SharedPreferences sharedPref;
 
+    FloatingActionButton exportButton;
+    FloatingActionButton copyButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bibliography);
 
+        //Set up buttons
+        exportButton = findViewById(R.id.export_button);
+        copyButton = findViewById(R.id.copy_button);
+
+
         //Load up previous style, or set to MLA if none found
-        previousStyle = this.getPreferences(Context.MODE_PRIVATE);
-        style = previousStyle.getString("style", "MLA");
+        sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        style = sharedPref.getString("style", "MLA");
 
         //Make a hashmap between styles and buttons
         styleButtons = new HashMap<>();
@@ -84,6 +96,26 @@ public class BibliographyActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         setButtons(style);
+
+        boolean ranBefore = sharedPref.getBoolean("biblio", false);
+
+        if (!ranBefore) {
+            runTutorial();
+        }
+    }
+
+    private void runTutorial() {
+        ShowcaseConfig tutorialConfig = new ShowcaseConfig();
+        tutorialConfig.setDelay(500);
+
+        MaterialShowcaseSequence tutorial = new MaterialShowcaseSequence(this, "smthdif5");
+
+        tutorial.setConfig(tutorialConfig);
+        tutorial.addSequenceItem(copyButton, "Copy your bibliography to your clipboard using this button", "OKAY");
+        tutorial.addSequenceItem(exportButton, "Save your bibliography to an HTML file using this button", "OKAY");
+        tutorial.start();
+
+        sharedPref.edit().putBoolean("biblio", true).apply();
     }
 
     //Four methods below are linked to onClick in layout files
@@ -107,7 +139,7 @@ public class BibliographyActivity extends AppCompatActivity {
     private void setButtons(String style) {
         String oldStyle = this.style;
         this.style = style;
-        previousStyle.edit().putString("style", style).apply();
+        sharedPref.edit().putString("style", style).apply();
 
         adapter.style = this.style;
         adapter.reload();
