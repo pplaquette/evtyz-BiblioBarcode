@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
     private FloatingActionButton takePhoto;
     private ImageButton bibliographyButton;
     private ImageButton manualButton;
-
+    private ImageButton blankButton;
 
     //Initializing our executor
     private Executor takePictureExecutor = Runnable::run;
@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
         loading = findViewById(R.id.loading);
         manualButton = findViewById(R.id.manualButton);
         bibliographyButton = findViewById(R.id.bibliographyButton);
-
+        blankButton = findViewById(R.id.blankButton);
 
         // Set up database
         database = Room
@@ -202,6 +202,7 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
 
         tutorial.setConfig(tutorialConfig);
         tutorial.addSequenceItem(takePhoto, "Scan your barcodes by tapping this button", "OKAY");
+        tutorial.addSequenceItem(blankButton, "You can add a book manually by tapping this button", "OKAY");
         tutorial.addSequenceItem(manualButton, "You can add ISBNs manually by tapping this button, or swiping down", "OKAY");
         tutorial.addSequenceItem(bibliographyButton, "You can view your bibliographies by tapping this button, or swiping up", "OKAY");
         tutorial.start();
@@ -317,4 +318,14 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
     }
 
 
+    public void addBlankBook(View view) {
+        int newID = sharedPref.getInt("manual", 0);
+        sharedPref.edit().putInt("manual", newID + 1).apply();
+
+        Intent intent = new Intent(this, BookActivity.class);
+        String newIDString = String.valueOf(newID);
+
+        intent.putExtra("empty", newIDString);
+        startActivity(intent);
+    }
 }

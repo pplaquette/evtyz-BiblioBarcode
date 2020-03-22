@@ -86,6 +86,10 @@ class Author implements Comparable<Author> {
         }
     }
 
+    boolean isNotEmpty() {
+        return !first.equals("") || !middle.equals("") || !last.equals("");
+    }
+
     //Implements a comparable interface, compares last names by alphabetical order
     @Override
     public int compareTo(Author author) {

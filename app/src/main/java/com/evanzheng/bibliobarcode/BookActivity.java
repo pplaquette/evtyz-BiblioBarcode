@@ -93,12 +93,21 @@ public class BookActivity extends AppCompatActivity {
 
         String code = intent.getStringExtra("barcode");
         if (code == null) {
-            String isbn = intent.getStringExtra("isbn");
-            book = MainActivity.database.bookDao().loadBook(isbn);
-            isNew = false;
-            saveButton.setImageResource(R.drawable.content_save);
-            processAuthors();
-            processBook();
+            code = intent.getStringExtra("isbn");
+            if (code == null) {
+                code = intent.getStringExtra("empty");
+                isNew = true;
+                assert code != null;
+                book = new Book(code);
+                processAuthors();
+                processBook();
+            } else {
+                book = MainActivity.database.bookDao().loadBook(code);
+                isNew = false;
+                saveButton.setImageResource(R.drawable.content_save);
+                processAuthors();
+                processBook();
+            }
         } else {
             isNew = true;
             loadBook(code);

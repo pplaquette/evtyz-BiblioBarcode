@@ -73,11 +73,11 @@
             android:tint="@color/darkText" />
 
         <androidx.appcompat.widget.AppCompatImageButton
-            android:id="@+id/extremeManualButton"
+            android:id="@+id/blankButton"
             android:layout_width="80sp"
             android:layout_height="80sp"
             android:backgroundTint="@color/colorWhite"
-            android:onClick="listenISBNPrompt"
+            android:onClick="addBlankBook"
             android:src="@drawable/pencil"
             android:tint="@color/darkText" />
 

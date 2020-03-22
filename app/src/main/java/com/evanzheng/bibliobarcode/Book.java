@@ -105,6 +105,16 @@ public class Book implements Comparable<Book> {
         state = "";
     }
 
+    Book(@NotNull String code) {
+        isbn = code;
+        title = "";
+        authors = new ArrayList<>();
+        publisher = "";
+        year = "";
+        city = "";
+        state = "";
+    }
+
     void infoMapToList(Map<String, String> bookInfo) {
         title = bookInfo.get("title");
         publisher = bookInfo.get("publisher");
@@ -138,7 +148,7 @@ public class Book implements Comparable<Book> {
             case "MLA":
                 authorCite = "";
 
-                if (authors.size() != 0) {
+                if (authors.size() != 0 && authors.get(0).isNotEmpty()) {
                     authorCite = authorCite.concat(authors.get(0).formattedName());
                     for (int i = 1; i < authors.size(); i++) {
                         if (i == authors.size() - 1) {
@@ -233,7 +243,7 @@ public class Book implements Comparable<Book> {
                 break;
             case "Chicago":
                 authorCite = "";
-                if (authors.size() != 0) {
+                if (authors.size() != 0 && authors.get(0).isNotEmpty()) {
                     authorCite = authorCite.concat(authors.get(0).formattedName());
                     for (int i = 1; i < authors.size(); i++) {
                         if (i == authors.size() - 1) {
@@ -283,13 +293,14 @@ public class Book implements Comparable<Book> {
                 break;
             case "Harvard":
                 authorCite = "";
-                for (int i = 0; i < authors.size(); i++) {
-                    authorCite = authorCite.concat(authors.get(i).formattedInitializedName()).concat(", ");
-                    if (i == authors.size() - 2) {
-                        authorCite = authorCite.concat(" and ");
+                if (authors.size() != 0 && authors.get(0).isNotEmpty()) {
+                    for (int i = 0; i < authors.size(); i++) {
+                        authorCite = authorCite.concat(authors.get(i).formattedInitializedName()).concat(", ");
+                        if (i == authors.size() - 2) {
+                            authorCite = authorCite.concat(" and ");
+                        }
                     }
                 }
-
                 if (year.equals("")) {
                     yearCite = "n.d. ";
                 } else {
