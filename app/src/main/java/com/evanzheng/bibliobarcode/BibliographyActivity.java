@@ -62,6 +62,7 @@ public class BibliographyActivity extends AppCompatActivity {
         //Set up header
         Objects.requireNonNull(getSupportActionBar()).setTitle("Bibliography");
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.colorPrimary)));
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         //Set up recycler view
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
@@ -131,7 +132,7 @@ public class BibliographyActivity extends AppCompatActivity {
 
         //Change colours based on whether it's supposed to be focusing/defocusing
         if (focus) {
-            textC = getResources().getColor(R.color.colorAccent);
+            textC = getResources().getColor(R.color.colorWhite);
             bgID = R.drawable.pill_activated;
         } else {
             textC = getResources().getColor(R.color.darkText);

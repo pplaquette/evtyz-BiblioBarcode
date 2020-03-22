@@ -38,11 +38,13 @@
     <include layout="@layout/content_book" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:tint="@color/colorWhite"
         android:id="@+id/addToBibliography"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/fab_margin"
-        android:tint="@color/darkText"
+        app:backgroundTint="@color/colorAccent"
+        app:borderWidth="0dp"
         app:layout_anchor="@id/toolbar_layout"
         app:layout_anchorGravity="bottom|end"
         app:srcCompat="@android:drawable/ic_input_add" />

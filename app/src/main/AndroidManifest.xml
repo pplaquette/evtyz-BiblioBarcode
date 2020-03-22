@@ -17,6 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:parentActivityName=".MainActivity"
             android:name=".BibliographyActivity"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
         <activity

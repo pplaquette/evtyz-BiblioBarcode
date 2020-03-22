@@ -16,7 +16,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
-            android:padding="5dp">
+            android:paddingLeft="5sp"
+            android:paddingTop="12sp"
+            android:paddingRight="5sp"
+            android:paddingBottom="5sp">
 
             <FrameLayout
                 android:layout_width="wrap_content"
@@ -112,23 +115,25 @@
     </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:backgroundTint="@color/colorAccent"
+        android:tint="@color/colorWhite"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="20sp"
-        android:backgroundTint="@color/colorPrimary"
         android:onClick="export"
-        android:tint="@color/colorAccent"
+        app:borderWidth="0dp"
         app:srcCompat="@drawable/content_save" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:backgroundTint="@color/colorAccent"
+        android:tint="@color/colorWhite"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="20sp"
         android:layout_marginBottom="100sp"
-        android:backgroundTint="@color/colorPrimary"
         android:onClick="copyToClipboard"
-        android:tint="@color/colorAccent"
+        app:borderWidth="0dp"
         app:srcCompat="@drawable/content_copy" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

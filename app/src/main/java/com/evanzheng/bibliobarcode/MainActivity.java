@@ -168,6 +168,10 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
 
     }
 
+    public void listenISBNPrompt(View v) {
+        goToISBNEntry();
+    }
+
     private void goToISBNEntry() {
         Dialog isbnEntry = new Dialog(MainActivity.this, R.style.Theme_MaterialComponents_Light_Dialog);
         isbnEntry.setContentView(R.layout.isbn_dialog);

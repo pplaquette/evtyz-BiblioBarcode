@@ -26,6 +26,7 @@
             android:onClick="searchLocation"
             android:paddingLeft="15sp"
             android:paddingRight="15sp"
+            android:paddingBottom="15sp"
             android:text="@string/searchtext" />
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>
