@@ -48,16 +48,13 @@ public class Book implements Comparable<Book> {
     @ColumnInfo(name = "state")
     public String state;
 
-    @ColumnInfo(name = "description")
-    public String description;
-
     @Ignore
     public String citation;
 
     @Ignore
     public String rawFormatCitation;
 
-    public Book(@NotNull String isbn, String title, List<Author> authors, String publisher, String year, String city, String state, String description) {
+    public Book(@NotNull String isbn, String title, List<Author> authors, String publisher, String year, String city, String state) {
         this.isbn = isbn;
         this.title = title;
         this.authors = authors;
@@ -65,7 +62,6 @@ public class Book implements Comparable<Book> {
         this.year = year;
         this.city = city;
         this.state = state;
-        this.description = description;
     }
 
     //Constructor in Book
@@ -105,14 +101,16 @@ public class Book implements Comparable<Book> {
             year = "";
         }
 
-        try {
-            description = info.getString("description");
-        } catch (JSONException e) {
-            description = "";
-        }
-
         city = "";
         state = "";
+    }
+
+    void infoMapToList(Map<String, String> bookInfo) {
+        title = bookInfo.get("title");
+        publisher = bookInfo.get("publisher");
+        year = bookInfo.get("year");
+        city = bookInfo.get("city");
+        state = bookInfo.get("state");
     }
 
     //Converts hashmap to author list and string
