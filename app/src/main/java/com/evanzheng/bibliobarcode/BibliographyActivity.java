@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.Spanned;
@@ -36,6 +37,7 @@ public class BibliographyActivity extends AppCompatActivity {
     Map<String, Integer> styleButtons;
     BibliographyAdapter adapter;
     ClipboardManager clipboard;
+    SharedPreferences previousStyle;
 
 
     @Override
@@ -43,9 +45,9 @@ public class BibliographyActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bibliography);
 
-        //Default style
-        //TODO: Implement Shared Preferences
-        style = "MLA";
+        //Load up previous style, or set to MLA if none found
+        previousStyle = this.getPreferences(Context.MODE_PRIVATE);
+        style = previousStyle.getString("style", "MLA");
 
         //Make a hashmap between styles and buttons
         styleButtons = new HashMap<>();
@@ -104,6 +106,8 @@ public class BibliographyActivity extends AppCompatActivity {
     private void setButtons(String style) {
         String oldStyle = this.style;
         this.style = style;
+        previousStyle.edit().putString("style", style).apply();
+
         adapter.style = this.style;
         adapter.reload();
 
