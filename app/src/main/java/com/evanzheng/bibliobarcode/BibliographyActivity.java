@@ -167,7 +167,7 @@ public class BibliographyActivity extends AppCompatActivity {
             textC = getResources().getColor(R.color.colorWhite);
             bgID = R.drawable.pill_activated;
         } else {
-            textC = getResources().getColor(R.color.darkText);
+            textC = getResources().getColor(R.color.greyText);
             bgID = R.drawable.pill_deactivated;
         }
 

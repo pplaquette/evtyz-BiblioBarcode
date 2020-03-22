@@ -56,8 +56,8 @@
 
         <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/bibliographyButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="80sp"
+            android:layout_height="80sp"
             android:backgroundTint="@color/colorWhite"
             android:onClick="listenBibliographyPrompt"
             android:src="@drawable/format_list_bulleted_square"
@@ -65,8 +65,17 @@
 
         <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/manualButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="80sp"
+            android:layout_height="80sp"
+            android:backgroundTint="@color/colorWhite"
+            android:onClick="listenISBNPrompt"
+            android:src="@drawable/numeric"
+            android:tint="@color/darkText" />
+
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/extremeManualButton"
+            android:layout_width="80sp"
+            android:layout_height="80sp"
             android:backgroundTint="@color/colorWhite"
             android:onClick="listenISBNPrompt"
             android:src="@drawable/pencil"

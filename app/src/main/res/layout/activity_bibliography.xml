@@ -27,6 +27,7 @@
                 android:foreground="?android:attr/selectableItemBackground">
 
                 <TextView
+                    android:textColor="@color/greyText"
                     android:id="@+id/MLA"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
@@ -49,6 +50,7 @@
                 android:foreground="?android:attr/selectableItemBackground">
 
                 <TextView
+                    android:textColor="@color/greyText"
                     android:id="@+id/APA"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
@@ -71,6 +73,7 @@
                 android:foreground="?android:attr/selectableItemBackground">
 
                 <TextView
+                    android:textColor="@color/greyText"
                     android:id="@+id/Chicago"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
@@ -93,6 +96,7 @@
                 android:foreground="?android:attr/selectableItemBackground">
 
                 <TextView
+                    android:textColor="@color/greyText"
                     android:id="@+id/Harvard"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"

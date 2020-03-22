@@ -137,6 +137,7 @@ public class Book implements Comparable<Book> {
         switch (style) {
             case "MLA":
                 authorCite = "";
+
                 if (authors.size() != 0) {
                     authorCite = authorCite.concat(authors.get(0).formattedName());
                     for (int i = 1; i < authors.size(); i++) {

@@ -49,10 +49,10 @@ import uk.co.deanwild.materialshowcaseview.ShowcaseConfig;
 
 //Created by Evan Zheng
 
+
 public class MainActivity extends AppCompatActivity implements CameraXConfig.Provider {
 
 
-    private boolean ranBefore;
     private SharedPreferences sharedPref;
 
     //Initializing book database
@@ -89,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
             super.onError(exception);
         }
     };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -185,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
 
         sharedPref = this.getPreferences(Context.MODE_PRIVATE);
 
-        ranBefore = sharedPref.getBoolean("camera", false);
+        boolean ranBefore = sharedPref.getBoolean("camera", false);
 
         if (!ranBefore) {
             runTutorial();
