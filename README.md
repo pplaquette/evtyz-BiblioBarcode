@@ -8,8 +8,8 @@ This app was created as part of a CS50x final project, and was written using Jav
 
 # Features and Implementation
 
-- Supports both scanning an ISBN (using camera input from CameraX) and manual ISBN input
 - Utilizes Google's Mobile Vision Machine Learning API to scan for valid barcodes in photos
+- Supports manual ISBN entry or a blank entry as well
 - Queries the Google Books API using Android Volley for a book with a matching ISBN
 - Parses the resulting JSON information into title, author, publisher, and date fields
 - Allows users to edit and update the book's information after parsing to clean up errors and add additional info
