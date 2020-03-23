@@ -237,8 +237,6 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
             //If the code was valid, send it to edit activity
             if (BarcodeHelper.checkCode(code, context)) {
                 goToEditActivity(code);
-            } else {
-                Toast.makeText(context, "This is not a valid ISBN", Toast.LENGTH_SHORT).show();
             }
         });
         Button cancelButton = isbnEntry.findViewById(R.id.cancelISBN);
