@@ -22,7 +22,7 @@ class BarcodeHelper {
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
     }
 
-    //Checks if code is ISBN
+    //Checks if code is ISBN based on algorithm here: https://en.wikipedia.org/wiki/International_Standard_Book_Number
     private static boolean isISBN(@NonNull String code) {
         if (code.length() == 13) {
             boolean weightThree = false;

@@ -20,16 +20,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-
+// We use a type converter because authors cannot be stored in an sql database without being converted into strings
 @SuppressWarnings("WeakerAccess")
 @Entity(tableName = "books")
 @TypeConverters(AuthorConverter.class)
 public class Book implements Comparable<Book> {
 
+    //ISBNs must be unique.
     @PrimaryKey
     @NonNull
     public String isbn;
 
+    //Fields in SQL database
     @ColumnInfo(name = "title")
     public String title;
 
@@ -48,12 +50,14 @@ public class Book implements Comparable<Book> {
     @ColumnInfo(name = "state")
     public String state;
 
+    //Citations (which we can build on the spot, for space efficiency)
     @Ignore
     public String citation;
 
     @Ignore
     public String rawFormatCitation;
 
+    //When we call a book from the database, this is what is used to build it.
     public Book(@NotNull String isbn, String title, List<Author> authors, String publisher, String year, String city, String state) {
         this.isbn = isbn;
         this.title = title;
@@ -64,7 +68,7 @@ public class Book implements Comparable<Book> {
         this.state = state;
     }
 
-    //Constructor in Book
+    //Constructor for book when we get a JSON file to parse.
     @Ignore
     Book(JSONObject info, @NotNull String isbn) {
         this.isbn = isbn;
@@ -83,6 +87,7 @@ public class Book implements Comparable<Book> {
                 String name = rawAuthors.getString(i);
                 authors.add(new Author(name));
             }
+            //Authors must be in alphabetical order
             Collections.sort(authors);
         } catch (JSONException ignored) {
         }
@@ -105,6 +110,7 @@ public class Book implements Comparable<Book> {
         state = "";
     }
 
+    //Creating an empty book with fake ISBN
     Book(@NotNull String code) {
         isbn = code;
         title = "";
@@ -115,6 +121,7 @@ public class Book implements Comparable<Book> {
         state = "";
     }
 
+    //Conversion between hashmap and book
     void infoMapToList(Map<String, String> bookInfo) {
         title = bookInfo.get("title");
         publisher = bookInfo.get("publisher");
@@ -132,9 +139,11 @@ public class Book implements Comparable<Book> {
         Collections.sort(authors);
     }
 
-
+    //Cites the book based on a style
     void cite(String style) {
+        //HTML citation
         rawFormatCitation = "";
+        //Plain text citation
         citation = "";
         String authorCite;
         String titleCite;
@@ -342,10 +351,12 @@ public class Book implements Comparable<Book> {
         }
     }
 
+    //Gets the citation of the current style, in HTML form.
     Spanned getCitation() {
         return HtmlCompat.fromHtml(rawFormatCitation, HtmlCompat.FROM_HTML_MODE_LEGACY);
     }
 
+    //Implements comparable interface, where we compare books by alphabetical order of citation (to sort the bibliography)
     @Override
     public int compareTo(Book book) {
         return citation.compareTo(book.citation);

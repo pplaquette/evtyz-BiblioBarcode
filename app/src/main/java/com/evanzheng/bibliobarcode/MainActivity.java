@@ -54,10 +54,10 @@ import uk.co.deanwild.materialshowcaseview.ShowcaseConfig;
 public class MainActivity extends AppCompatActivity implements CameraXConfig.Provider {
 
 
-    private SharedPreferences sharedPref;
-
     //Initializing book database
     public static BookDatabase database;
+    private SharedPreferences sharedPref;
+
     //Initializing views
     private PreviewView viewfinder;
     private ProgressBar loading;
@@ -68,11 +68,13 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
 
     //Initializing our executor
     private Executor takePictureExecutor = Runnable::run;
+
     //Initializing camera and barcode objects
     private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
     private ImageCapture imageCapture;
     private BarcodeDetector detector;
     private Context context;
+
     //Initializing our image callback methods
     ImageCapture.OnImageCapturedCallback captureProcess = new ImageCapture.OnImageCapturedCallback() {
         @Override
@@ -183,17 +185,18 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
             }
         });
 
+        //Don't show that it's loading if it's done loading
         loading.setVisibility(View.INVISIBLE);
 
+        //Check if a tutorial needs to be run
         sharedPref = this.getPreferences(Context.MODE_PRIVATE);
-
         boolean ranBefore = sharedPref.getBoolean("camera", false);
-
         if (!ranBefore) {
             runTutorial();
         }
     }
 
+    //Runs tutorial
     private void runTutorial() {
         ShowcaseConfig tutorialConfig = new ShowcaseConfig();
         tutorialConfig.setDelay(500);
@@ -206,19 +209,22 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
         tutorial.addSequenceItem(manualButton, "You can add ISBNs manually by tapping this button, or swiping down", "OKAY");
         tutorial.addSequenceItem(bibliographyButton, "You can view your bibliographies by tapping this button, or swiping up", "OKAY");
         tutorial.start();
-        sharedPref.edit().putBoolean("camera", true).apply();
 
+        //Tutorial won't be run again
+        sharedPref.edit().putBoolean("camera", true).apply();
     }
 
-
+    //links to ISBN button
     public void listenISBNPrompt(View v) {
         goToISBNEntry();
     }
 
+    //links to bibliography button
     public void listenBibliographyPrompt(View v) {
         goToBibliography();
     }
 
+    //Goes to ISBN entry dialog
     private void goToISBNEntry() {
         Dialog isbnEntry = new Dialog(MainActivity.this, R.style.Theme_MaterialComponents_Light_Dialog);
         isbnEntry.setContentView(R.layout.isbn_dialog);
@@ -228,8 +234,11 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
         Button submitButton = isbnEntry.findViewById(R.id.submitISBN);
         submitButton.setOnClickListener(v -> {
             String code = entry.getText().toString();
+            //If the code was valid, send it to edit activity
             if (BarcodeHelper.checkCode(code, context)) {
                 goToEditActivity(code);
+            } else {
+                Toast.makeText(context, "This is not a valid ISBN", Toast.LENGTH_SHORT).show();
             }
         });
         Button cancelButton = isbnEntry.findViewById(R.id.cancelISBN);
@@ -238,13 +247,14 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
         isbnEntry.show();
     }
 
-
+    //Goes to edit activity
     private void goToEditActivity(String code) {
         Intent intent = new Intent(this, BookActivity.class);
         intent.putExtra("barcode", code);
         startActivity(intent);
     }
 
+    //Goes to bibliography
     private void goToBibliography() {
         Intent intent = new Intent(this, BibliographyActivity.class);
         startActivity(intent);
@@ -253,6 +263,8 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
     // Binding a imageCapture function to our camera
     protected void bindTake(@NonNull ProcessCameraProvider cameraProvider) {
 
+
+        //Getting rotation was causing a crash on some devices, so a default rotation was created
         try {
             imageCapture = new ImageCapture.Builder().setTargetRotation(viewfinder.getDisplay().getRotation()).build();
         } catch (NullPointerException e) {
@@ -317,9 +329,13 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
         loading.setVisibility(View.INVISIBLE);
     }
 
-
+    //Adds a blank book
     public void addBlankBook(View view) {
+
+        //A permanent ID for the book
         int newID = sharedPref.getInt("manual", 0);
+
+        //ID can never be used again
         sharedPref.edit().putInt("manual", newID + 1).apply();
 
         Intent intent = new Intent(this, BookActivity.class);

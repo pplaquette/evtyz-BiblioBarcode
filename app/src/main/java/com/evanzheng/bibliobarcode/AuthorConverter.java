@@ -8,7 +8,7 @@ import java.util.List;
 // A class that manages conversions between list<author> and string. Used so we can insert and get books from SQL database.
 @SuppressWarnings("WeakerAccess")
 public class AuthorConverter {
-    //converts author list to string for SQL database insertion
+    //converts author list to string for SQL database insertion, by separating the author's names by \t
     @TypeConverter
     public String authorListToText(List<Author> authors) {
         int numAuthors = authors.size();

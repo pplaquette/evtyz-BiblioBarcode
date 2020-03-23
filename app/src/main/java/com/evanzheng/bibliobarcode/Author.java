@@ -1,21 +1,28 @@
 package com.evanzheng.bibliobarcode;
 
+
+//This is an author object
+
 class Author implements Comparable<Author> {
+
+    //Authors have three fields: first, middle, and last names
     String first;
     String middle;
     String last;
 
+    //If we're creating an empty author, they can all be empty strings
     Author() {
         first = "";
         middle = "";
         last = "";
     }
 
-    //Parses a name into an author object
+    //If we're creating an author based on a full name, we must parse it into first, middle, and last names
     Author(String name) {
         middle = "";
         last = "";
 
+        //This is the way that we parse it: first name, then last name, then middle name optionally.
         String[] nameOrder = name.split(" ");
         first = nameOrder[0];
         int numNames = nameOrder.length;
@@ -37,6 +44,8 @@ class Author implements Comparable<Author> {
         }
     }
 
+    //Returns the full name of the author
+
     String fullName() {
         String name = first;
         if (!middle.equals("")) {
@@ -51,6 +60,7 @@ class Author implements Comparable<Author> {
         return name;
     }
 
+    //Returns the name of the author "First Middle Last" in format "Last, First M.".
     String formattedName() {
         if (last.equals("")) {
             return first;
@@ -68,6 +78,7 @@ class Author implements Comparable<Author> {
         }
     }
 
+    //Returns the name of the author "First Middle Last" in format "Last, F.M."
     String formattedInitializedName() {
         if (last.equals("")) {
             return first;
@@ -86,6 +97,7 @@ class Author implements Comparable<Author> {
         }
     }
 
+    //Does the author have no name?
     boolean isNotEmpty() {
         return !first.equals("") || !middle.equals("") || !last.equals("");
     }

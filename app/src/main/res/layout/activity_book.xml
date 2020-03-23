@@ -7,6 +7,14 @@
     android:fitsSystemWindows="true"
     tools:context=".BookActivity">
 
+    <LinearLayout
+        android:id="@+id/placeholder"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal" />
+
+
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar"
         android:layout_width="match_parent"

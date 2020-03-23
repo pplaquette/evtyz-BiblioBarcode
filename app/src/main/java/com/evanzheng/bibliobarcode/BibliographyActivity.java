@@ -11,6 +11,7 @@ import android.text.Spanned;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,15 +38,29 @@ import uk.co.deanwild.materialshowcaseview.ShowcaseConfig;
 public class BibliographyActivity extends AppCompatActivity {
 
     //Set up constants
+
+    //This is for swipe-to-delete
     ItemTouchHelper itemTouchHelper;
+
+    //Manages citation style
     String style;
+
+    //Maps style to appropriate button
     Map<String, Integer> styleButtons;
+
+    //Manages the recycler view
     BibliographyAdapter adapter;
+
+    //For copying and pasting
     ClipboardManager clipboard;
+
+    //To remember styles from previous session, and to remember if a tutorial has been run
     SharedPreferences sharedPref;
 
+    //Export buttons initialization
     FloatingActionButton exportButton;
     FloatingActionButton copyButton;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,9 +94,9 @@ public class BibliographyActivity extends AppCompatActivity {
         //Set up recycler view
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
-        adapter = new BibliographyAdapter(style);
+        adapter = new BibliographyAdapter(style, clipboard);
 
-        //Set up recycler view touch listener
+        //Set up recycler view swipe listener
         itemTouchHelper = new ItemTouchHelper(new SwipeDeleteListener(adapter) {
             @Override
             public void onSwiped(@NotNull RecyclerView.ViewHolder viewHolder, int direction) {
@@ -97,6 +112,8 @@ public class BibliographyActivity extends AppCompatActivity {
 
         setButtons(style);
 
+
+        //Check to see if a tutorial needs to be run
         boolean ranBefore = sharedPref.getBoolean("biblio", false);
 
         if (!ranBefore) {
@@ -104,17 +121,22 @@ public class BibliographyActivity extends AppCompatActivity {
         }
     }
 
+    //Runs the tutorial
     private void runTutorial() {
         ShowcaseConfig tutorialConfig = new ShowcaseConfig();
         tutorialConfig.setDelay(500);
 
+
+        LinearLayout placeholder = findViewById(R.id.placeholder);
         MaterialShowcaseSequence tutorial = new MaterialShowcaseSequence(this, "smthdif5");
 
         tutorial.setConfig(tutorialConfig);
+        tutorial.addSequenceItem(placeholder, "Edit a citation by tapping, copy by long-pressing, and delete by swiping", "OKAY");
         tutorial.addSequenceItem(copyButton, "Copy your bibliography to your clipboard using this button", "OKAY");
         tutorial.addSequenceItem(exportButton, "Save your bibliography to an HTML file using this button", "OKAY");
         tutorial.start();
 
+        //Tutorial will never be run again
         sharedPref.edit().putBoolean("biblio", true).apply();
     }
 
@@ -137,10 +159,13 @@ public class BibliographyActivity extends AppCompatActivity {
 
     //When a button is pressed
     private void setButtons(String style) {
+        //Change the style to correspond with button
         String oldStyle = this.style;
         this.style = style;
+        //Save style
         sharedPref.edit().putString("style", style).apply();
 
+        //Send the style to the adapter to reload the citations
         adapter.style = this.style;
         adapter.reload();
 
@@ -149,10 +174,9 @@ public class BibliographyActivity extends AppCompatActivity {
 
         //Focus the new button
         processButton(style, true);
-
-
     }
 
+    //Manages bg color and text color changes for each button
     private void processButton(String style, boolean focus) {
         Integer id = styleButtons.get(style);
         if (id == null) {
@@ -176,32 +200,48 @@ public class BibliographyActivity extends AppCompatActivity {
         targetButton.setBackgroundResource(bgID);
     }
 
+    // Prompts the user if they are sure they want to delete an entry
     void deleteItem(int position) {
         new AlertDialog.Builder(BibliographyActivity.this, R.style.Theme_MaterialComponents_Light_Dialog_Alert)
                 .setTitle("Delete Book")
                 .setMessage("Are you sure you want to delete this entry?")
+                // Deletes entry from adapter if they say yes
                 .setPositiveButton(android.R.string.yes, (dialog, which) -> adapter.deleteItem(position))
+                //Otherwise, reset the recycler view to before they swiped
                 .setNegativeButton(android.R.string.no, (dialog, which) -> adapter.reload())
                 .setIcon(android.R.drawable.ic_delete)
                 .show();
     }
 
+    // Copies citations to a clipboard
     public void copyToClipboard(View view) {
+
+        //Plain text citation
         String rawBibliography = "";
+
+        //HTML citation
+        String formattedBibliography = "";
+
+        //Builds each bibliography (we use adapter.books because it is alphabetically sorted)
         for (Book book : adapter.books) {
             rawBibliography = rawBibliography.concat(book.citation).concat("\n");
+            formattedBibliography = formattedBibliography.concat(book.rawFormatCitation).concat("<br>");
         }
-        ClipData clip = ClipData.newPlainText("Bibliography", rawBibliography);
+
+        //Clip it. The plaintext is a backup for the html text in case they are pasting where HTML is not supported.
+        ClipData clip = ClipData.newHtmlText("Bibliography", rawBibliography, formattedBibliography);
         clipboard.setPrimaryClip(clip);
         Toast.makeText(this, "Copied! Remember to italicize your titles in your document!", Toast.LENGTH_LONG).show();
     }
 
-
+    //Exports citations to a clipboard
     public void export(View view) {
+        //Builds bibliography
         String rawBibliography = "";
         for (Book book : adapter.books) {
             rawBibliography = rawBibliography.concat(book.rawFormatCitation).concat("<br>");
         }
+        //Converts to HTML
         Spanned span = HtmlCompat.fromHtml(rawBibliography, HtmlCompat.FROM_HTML_MODE_LEGACY);
         String htmlBibliography = HtmlCompat.toHtml(span, HtmlCompat.TO_HTML_PARAGRAPH_LINES_CONSECUTIVE);
 

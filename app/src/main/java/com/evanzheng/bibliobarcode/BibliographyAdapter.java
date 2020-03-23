@@ -1,5 +1,7 @@
 package com.evanzheng.bibliobarcode;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
@@ -7,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,12 +19,20 @@ import java.util.List;
 
 public class BibliographyAdapter extends RecyclerView.Adapter<BibliographyAdapter.BibliographyViewHolder> {
 
+    // Style of citation
     String style;
+
+    //All books in bibliography
     List<Book> books = MainActivity.database.bookDao().loadBookSources();
 
-    BibliographyAdapter(String style) {
+    //Clipboard manager for copying individual citations
+    private ClipboardManager clipboard;
+
+    //Constructor method
+    BibliographyAdapter(String style, ClipboardManager clipboard) {
         super();
         this.style = style;
+        this.clipboard = clipboard;
     }
 
     //Creating a member of the list
@@ -30,7 +41,7 @@ public class BibliographyAdapter extends RecyclerView.Adapter<BibliographyAdapte
     public BibliographyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.citation, parent, false);
-        return new BibliographyViewHolder(view);
+        return new BibliographyViewHolder(view, clipboard);
     }
 
     //Binding it and linking it to a book
@@ -66,11 +77,12 @@ public class BibliographyAdapter extends RecyclerView.Adapter<BibliographyAdapte
         notifyDataSetChanged();
     }
 
+    //The actual viewholder for each entry in recyclerview
     static class BibliographyViewHolder extends RecyclerView.ViewHolder {
         LinearLayout containerView;
         TextView citationView;
 
-        BibliographyViewHolder(View view) {
+        BibliographyViewHolder(View view, ClipboardManager clipboard) {
             super(view);
             this.containerView = view.findViewById(R.id.citation_row);
             this.citationView = view.findViewById(R.id.citation);
@@ -83,6 +95,15 @@ public class BibliographyAdapter extends RecyclerView.Adapter<BibliographyAdapte
                 intent.putExtra("isbn", book.isbn);
 
                 context.startActivity(intent);
+            });
+
+            //Listen for long touch to copy text
+            this.containerView.setOnLongClickListener(v -> {
+                Book book = (Book) containerView.getTag();
+                ClipData clip = ClipData.newHtmlText("Bibliography", book.citation, book.rawFormatCitation);
+                clipboard.setPrimaryClip(clip);
+                Toast.makeText(v.getContext(), "Citation copied to clipboard!", Toast.LENGTH_SHORT).show();
+                return true;
             });
         }
     }

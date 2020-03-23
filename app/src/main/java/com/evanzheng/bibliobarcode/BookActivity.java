@@ -13,12 +13,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.widget.NestedScrollView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -41,16 +41,20 @@ public class BookActivity extends AppCompatActivity {
     //Initialize Volley Request Queue
     private RequestQueue requestQueue;
 
-    //Initialize shared preferences
-    private boolean ranBefore;
     private SharedPreferences sharedPref;
 
 
     //Initialize book
     private Book book;
+
+    //Initialize the maps that we will use to edit the book
     private Map<Integer, Author> authors;
     private Map<String, String> bookInfo;
+
+    //Making new authors with unique ids so that editing remains consistent
     private int nextAuthorId;
+
+    //Is this book new or was it already in the bibliography?
     private boolean isNew;
 
     //Initialize views
@@ -59,7 +63,6 @@ public class BookActivity extends AppCompatActivity {
     private Button searchButton;
     private ViewGroup fieldAuthorEdit;
     private FloatingActionButton saveButton;
-    private NestedScrollView scrollView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +73,7 @@ public class BookActivity extends AppCompatActivity {
         saveButton = findViewById(R.id.addToBibliography);
         saveButton.setOnClickListener(v -> addToBibliography());
 
-        //Initialize views and inflater
+        //Initialize toolbar and views
         Toolbar toolbar = findViewById(R.id.toolbar);
         setTitle("Edit Info:");
         setSupportActionBar(toolbar);
@@ -80,7 +83,6 @@ public class BookActivity extends AppCompatActivity {
         viewGroup = findViewById(R.id.listFields);
         searchButton = findViewById(R.id.searchLocation);
         searchButton.setVisibility(View.INVISIBLE);
-        scrollView = findViewById(R.id.scrollview);
 
         //Set up layout inflater
         layoutInflater = getLayoutInflater();
@@ -90,11 +92,12 @@ public class BookActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
 
-
+        //How did we enter this activity?
         String code = intent.getStringExtra("barcode");
         if (code == null) {
             code = intent.getStringExtra("isbn");
             if (code == null) {
+                // We entered it via generating an empty book
                 code = intent.getStringExtra("empty");
                 isNew = true;
                 assert code != null;
@@ -102,6 +105,7 @@ public class BookActivity extends AppCompatActivity {
                 processAuthors();
                 processBook();
             } else {
+                // We entered it via editing an existing book
                 book = MainActivity.database.bookDao().loadBook(code);
                 isNew = false;
                 saveButton.setImageResource(R.drawable.content_save);
@@ -109,13 +113,15 @@ public class BookActivity extends AppCompatActivity {
                 processBook();
             }
         } else {
+            // We entered it via scanning or entering an ISBN
             isNew = true;
             loadBook(code);
         }
 
-        sharedPref = this.getPreferences(Context.MODE_PRIVATE);
 
-        ranBefore = sharedPref.getBoolean("edit", false);
+        //Run tutorial if necessary
+        sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        boolean ranBefore = sharedPref.getBoolean("edit", false);
 
         if (!ranBefore) {
             runTutorial();
@@ -123,19 +129,24 @@ public class BookActivity extends AppCompatActivity {
 
     }
 
+    //Runs tutorial
     private void runTutorial() {
         ShowcaseConfig tutorialConfig = new ShowcaseConfig();
         tutorialConfig.setDelay(500);
 
+        LinearLayout placeholder = findViewById(R.id.placeholder);
+
         MaterialShowcaseSequence tutorial = new MaterialShowcaseSequence(this, "smthdif2");
 
         tutorial.setConfig(tutorialConfig);
+        tutorial.addSequenceItem(placeholder, "Edit your book information here", "OKAY");
         tutorial.addSequenceItem(saveButton, "Save your book by pressing this button", "OKAY");
         tutorial.start();
 
         sharedPref.edit().putBoolean("edit", true).apply();
     }
 
+    //On pressing the back button, go back
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
@@ -192,6 +203,7 @@ public class BookActivity extends AppCompatActivity {
         requestQueue.add(request);
     }
 
+    //Convert book authors into hashmap
     protected void processAuthors() {
         authors = new HashMap<>();
         if (book.authors.size() != 0) {
@@ -203,6 +215,7 @@ public class BookActivity extends AppCompatActivity {
 
     //Display the book's contents
     protected void processBook() {
+        //Convert book info into hashmap
         bookInfo = new HashMap<>();
         bookInfo.put("state", book.state);
         bookInfo.put("city", book.city);
@@ -210,6 +223,7 @@ public class BookActivity extends AppCompatActivity {
         bookInfo.put("publisher", book.publisher);
         bookInfo.put("title", book.title);
 
+        //Show editing fields on screen
         showField("state", "State of Publication:", "State");
         showField("city", "City of Publication:", "City");
         showField("year", "Year of Publication:", "Year");
@@ -219,14 +233,22 @@ public class BookActivity extends AppCompatActivity {
         searchButton.setVisibility(View.VISIBLE);
     }
 
-
+    //Showing field
     private void showField(String key, String label, String hint) {
+
+        //Inflate the field
         @SuppressLint("InflateParams") View fieldLayout = layoutInflater.inflate(R.layout.field, null);
+
+        //Set labels
         TextView description = fieldLayout.findViewById(R.id.fieldDesc);
         description.setText(label);
+
+        //Load data and hints into edittexts
         EditText titleEdit = fieldLayout.findViewById(R.id.fieldEdit);
         titleEdit.setText(bookInfo.get(key));
         titleEdit.setHint(hint);
+
+        //Set a listener to edit the corresponding bookinfo entry when text is changed
         titleEdit.addTextChangedListener(new BookTextWatcher(key) {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -284,7 +306,7 @@ public class BookActivity extends AppCompatActivity {
             });
             fieldAuthorEdit.addView(authorAdd, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-
+            //A delete button to remove an author
             TextView deleteButton = authorAdd.findViewById(R.id.deleteButton);
             deleteButton.setOnClickListener(new AuthorDeleteListener(i) {
                 @Override
@@ -352,12 +374,15 @@ public class BookActivity extends AppCompatActivity {
             }
         });
 
+        //Make sure ids are unique
         nextAuthorId++;
 
     }
 
     //Add to bibliography function
     private void addToBibliography() {
+
+        //All books must have titles to properly cite
         if (Objects.equals(bookInfo.get("title"), "")) {
             Toast.makeText(this, "Not possible to cite: please add a title!", Toast.LENGTH_LONG).show();
             return;
