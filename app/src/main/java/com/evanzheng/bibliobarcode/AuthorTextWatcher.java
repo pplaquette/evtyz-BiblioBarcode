@@ -5,9 +5,9 @@ import android.text.TextWatcher;
 
 //A custom implementation of an TextWatcher with an id field.
 
-public abstract class AuthorTextWatcher implements TextWatcher {
+abstract class AuthorTextWatcher implements TextWatcher {
 
-    int id;
+    final int id;
 
     AuthorTextWatcher(int id) {
         this.id = id;

@@ -28,7 +28,7 @@
         android:autofillHints="no"
         android:clickable="true"
         android:focusable="true"
-        android:hint="Fill In Info"
+        android:hint="@string/fill_in_info"
         android:imeOptions="actionDone"
         android:inputType="text"
         android:singleLine="true"

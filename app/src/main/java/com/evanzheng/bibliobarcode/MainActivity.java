@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
     private ImageButton blankButton;
 
     //Initializing our executor
-    private Executor takePictureExecutor = Runnable::run;
+    private final Executor takePictureExecutor = Runnable::run;
 
     //Initializing camera and barcode objects
     private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
     private Context context;
 
     //Initializing our image callback methods
-    ImageCapture.OnImageCapturedCallback captureProcess = new ImageCapture.OnImageCapturedCallback() {
+    private final ImageCapture.OnImageCapturedCallback captureProcess = new ImageCapture.OnImageCapturedCallback() {
         @Override
         public void onCaptureSuccess(@NonNull ImageProxy imageproxy) {
             @SuppressLint("UnsafeExperimentalUsageError") Image image = imageproxy.getImage();
@@ -135,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    protected void initialize() {
+    private void initialize() {
         //Set up context
         context = getApplicationContext();
 
@@ -215,11 +215,13 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
     }
 
     //links to ISBN button
+    @SuppressWarnings("unused")
     public void listenISBNPrompt(View v) {
         goToISBNEntry();
     }
 
     //links to bibliography button
+    @SuppressWarnings("unused")
     public void listenBibliographyPrompt(View v) {
         goToBibliography();
     }
@@ -259,7 +261,7 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
     }
 
     // Binding a imageCapture function to our camera
-    protected void bindTake(@NonNull ProcessCameraProvider cameraProvider) {
+    private void bindTake(@NonNull ProcessCameraProvider cameraProvider) {
 
 
         //Getting rotation was causing a crash on some devices, so a default rotation was created
@@ -276,13 +278,13 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
     }
 
     //When a photo is taken:
-    protected void Take() {
+    private void Take() {
         imageCapture.takePicture(takePictureExecutor, captureProcess);
         loading.setVisibility(View.VISIBLE);
     }
 
     //Binding a preview function to our camera
-    protected void bindPreview(@NonNull ProcessCameraProvider cameraProvider) {
+    private void bindPreview(@NonNull ProcessCameraProvider cameraProvider) {
         Preview preview = new Preview.Builder()
                 .build();
 
@@ -303,7 +305,7 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
     }
 
     //When an image is captured and converted:
-    protected void processImage(Bitmap image) {
+    private void processImage(Bitmap image) {
 
         //convert bitmap to frame
         Frame frame = new Frame.Builder().setBitmap(image).build();
@@ -328,7 +330,8 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
     }
 
     //Adds a blank book
-    public void addBlankBook(View view) {
+    @SuppressWarnings("unused")
+    public void addBlankBook(View v) {
 
         //A permanent ID for the book
         int newID = sharedPref.getInt("manual", 0);

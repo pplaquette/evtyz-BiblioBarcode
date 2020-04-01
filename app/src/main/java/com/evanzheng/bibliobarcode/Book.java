@@ -29,7 +29,7 @@ public class Book implements Comparable<Book> {
     //ISBNs must be unique.
     @PrimaryKey
     @NonNull
-    public String isbn;
+    public final String isbn;
 
     //Fields in SQL database
     @ColumnInfo(name = "title")

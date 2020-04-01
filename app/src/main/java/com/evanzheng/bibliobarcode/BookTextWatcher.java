@@ -5,9 +5,9 @@ import android.text.TextWatcher;
 
 // A custom implementation of a TextWatcher with a key (so we can keep track of what information it's editing)
 
-public abstract class BookTextWatcher implements TextWatcher {
+abstract class BookTextWatcher implements TextWatcher {
 
-    String key;
+    final String key;
 
     BookTextWatcher(String key) {
         this.key = key;

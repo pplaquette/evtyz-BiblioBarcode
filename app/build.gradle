@@ -40,10 +40,15 @@ dependencies {
 
 
     implementation "ch.acra:acra-mail:$acraVersion"
+    //noinspection GradleDependency
     implementation "androidx.camera:camera-core:${camerax_version}"
+    //noinspection GradleDependency
     implementation "androidx.camera:camera-camera2:${camerax_version}"
+    //noinspection GradleDependency
     implementation "androidx.camera:camera-view:1.0.0-alpha08"
+    //noinspection GradleDependency
     implementation "androidx.camera:camera-extensions:1.0.0-alpha08"
+    //noinspection GradleDependency
     implementation "androidx.camera:camera-lifecycle:${camerax_version}"
     implementation 'com.google.android.gms:play-services-vision:19.0.0'
     implementation 'com.google.android.material:material:1.1.0'

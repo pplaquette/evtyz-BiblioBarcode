@@ -157,7 +157,7 @@ public class BookActivity extends AppCompatActivity {
     }
 
     //Loads a book based on the code
-    protected void loadBook(String isbn) {
+    private void loadBook(String isbn) {
         //First API call
         String url = "https://www.googleapis.com/books/v1/volumes?q=isbn:"
                 .concat(isbn);
@@ -204,7 +204,7 @@ public class BookActivity extends AppCompatActivity {
     }
 
     //Convert book authors into hashmap
-    protected void processAuthors() {
+    private void processAuthors() {
         authors = new HashMap<>();
         if (book.authors.size() != 0) {
             for (int i = 0; i < book.authors.size(); i++) {
@@ -214,7 +214,7 @@ public class BookActivity extends AppCompatActivity {
     }
 
     //Display the book's contents
-    protected void processBook() {
+    private void processBook() {
         //Convert book info into hashmap
         bookInfo = new HashMap<>();
         bookInfo.put("state", book.state);
@@ -319,6 +319,7 @@ public class BookActivity extends AppCompatActivity {
     }
 
     //Search for location of publisher
+    @SuppressWarnings("unused")
     public void searchLocation(View view) {
         if (Objects.equals(bookInfo.get("publisher"), "")) {
             return;
@@ -330,6 +331,7 @@ public class BookActivity extends AppCompatActivity {
     }
 
     //Add an author
+    @SuppressWarnings("unused")
     public void addAuthor(View v) {
         @SuppressLint("InflateParams") View authorAdd = layoutInflater.inflate(R.layout.author_add, null);
 

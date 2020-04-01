@@ -39,27 +39,24 @@ public class BibliographyActivity extends AppCompatActivity {
 
     //Set up constants
 
-    //This is for swipe-to-delete
-    ItemTouchHelper itemTouchHelper;
-
     //Manages citation style
-    String style;
+    private String style;
 
     //Maps style to appropriate button
-    Map<String, Integer> styleButtons;
+    private Map<String, Integer> styleButtons;
 
     //Manages the recycler view
-    BibliographyAdapter adapter;
+    private BibliographyAdapter adapter;
 
     //For copying and pasting
-    ClipboardManager clipboard;
+    private ClipboardManager clipboard;
 
     //To remember styles from previous session, and to remember if a tutorial has been run
-    SharedPreferences sharedPref;
+    private SharedPreferences sharedPref;
 
     //Export buttons initialization
-    FloatingActionButton exportButton;
-    FloatingActionButton copyButton;
+    private FloatingActionButton exportButton;
+    private FloatingActionButton copyButton;
 
 
     @Override
@@ -97,7 +94,8 @@ public class BibliographyActivity extends AppCompatActivity {
         adapter = new BibliographyAdapter(style, clipboard);
 
         //Set up recycler view swipe listener
-        itemTouchHelper = new ItemTouchHelper(new SwipeDeleteListener(adapter) {
+        //This is for swipe-to-delete
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new SwipeDeleteListener(adapter) {
             @Override
             public void onSwiped(@NotNull RecyclerView.ViewHolder viewHolder, int direction) {
                 int position = viewHolder.getAdapterPosition();
@@ -141,18 +139,22 @@ public class BibliographyActivity extends AppCompatActivity {
     }
 
     //Four methods below are linked to onClick in layout files
+    @SuppressWarnings("unused")
     public void setMLA(View view) {
         setButtons("MLA");
     }
 
+    @SuppressWarnings("unused")
     public void setAPA(View view) {
         setButtons("APA");
     }
 
+    @SuppressWarnings("unused")
     public void setChicago(View view) {
         setButtons("Chicago");
     }
 
+    @SuppressWarnings("unused")
     public void setHarvard(View view) {
         setButtons("Harvard");
     }
@@ -201,7 +203,7 @@ public class BibliographyActivity extends AppCompatActivity {
     }
 
     // Prompts the user if they are sure they want to delete an entry
-    void deleteItem(int position) {
+    private void deleteItem(int position) {
         new AlertDialog.Builder(BibliographyActivity.this, R.style.Theme_MaterialComponents_Light_Dialog_Alert)
                 .setTitle("Delete Book")
                 .setMessage("Are you sure you want to delete this entry?")
@@ -214,6 +216,7 @@ public class BibliographyActivity extends AppCompatActivity {
     }
 
     // Copies citations to a clipboard
+    @SuppressWarnings("unused")
     public void copyToClipboard(View view) {
 
         //Plain text citation
@@ -235,6 +238,7 @@ public class BibliographyActivity extends AppCompatActivity {
     }
 
     //Exports citations to a clipboard
+    @SuppressWarnings("unused")
     public void export(View view) {
         //Builds bibliography
         String rawBibliography = "";

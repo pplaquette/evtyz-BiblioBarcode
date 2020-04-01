@@ -7,8 +7,7 @@ import android.view.View;
 
 
 //Implementation of Mirek Rusin's "OnSwipeTouchListener" from https://stackoverflow.com/questions/4139288/android-how-to-handle-right-to-left-swipe-gestures
-@SuppressWarnings("WeakerAccess")
-public class OnSwipeTouchListener implements View.OnTouchListener {
+class OnSwipeTouchListener implements View.OnTouchListener {
     private final GestureDetector gestureDetector;
 
     OnSwipeTouchListener(Context ctx) {
@@ -21,16 +20,10 @@ public class OnSwipeTouchListener implements View.OnTouchListener {
         return gestureDetector.onTouchEvent(event);
     }
 
-    public void onSwipeRight() {
+    void onSwipeTop() {
     }
 
-    public void onSwipeLeft() {
-    }
-
-    public void onSwipeTop() {
-    }
-
-    public void onSwipeBottom() {
+    void onSwipeBottom() {
     }
 
     private final class GestureListener extends GestureDetector.SimpleOnGestureListener {
@@ -51,11 +44,6 @@ public class OnSwipeTouchListener implements View.OnTouchListener {
                 float diffX = e2.getX() - e1.getX();
                 if (Math.abs(diffX) > Math.abs(diffY)) {
                     if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
-                        if (diffX > 0) {
-                            onSwipeRight();
-                        } else {
-                            onSwipeLeft();
-                        }
                         result = true;
                     }
                 } else if (Math.abs(diffY) > SWIPE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {

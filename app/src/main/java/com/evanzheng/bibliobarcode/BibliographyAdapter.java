@@ -26,7 +26,7 @@ public class BibliographyAdapter extends RecyclerView.Adapter<BibliographyAdapte
     List<Book> books = MainActivity.database.bookDao().loadBookSources();
 
     //Clipboard manager for copying individual citations
-    private ClipboardManager clipboard;
+    private final ClipboardManager clipboard;
 
     //Constructor method
     BibliographyAdapter(String style, ClipboardManager clipboard) {
@@ -79,8 +79,8 @@ public class BibliographyAdapter extends RecyclerView.Adapter<BibliographyAdapte
 
     //The actual viewholder for each entry in recyclerview
     static class BibliographyViewHolder extends RecyclerView.ViewHolder {
-        LinearLayout containerView;
-        TextView citationView;
+        final LinearLayout containerView;
+        final TextView citationView;
 
         BibliographyViewHolder(View view, ClipboardManager clipboard) {
             super(view);
