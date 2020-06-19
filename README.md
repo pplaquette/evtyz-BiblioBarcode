@@ -1,4 +1,4 @@
-# Biblio Barcode
+# BiblioBarcode
 
 Built and designed by Evan Zheng.
 
