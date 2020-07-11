@@ -6,6 +6,10 @@ BiblioBarcode is an Android app that scans ISBN barcodes on books and formats th
 
 This app was created as part of a CS50x final project, and was written using Java and SQL on Android Studio.
 
+## Preview
+
+![Screenshot](bibliobarcodepreview.gif)
+
 ## Features and Implementation
 
 - Utilizes Google's Mobile Vision Machine Learning API to scan for valid barcodes in photos
