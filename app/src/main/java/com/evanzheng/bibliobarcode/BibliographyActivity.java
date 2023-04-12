@@ -16,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.text.HtmlCompat;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -85,7 +86,8 @@ public class BibliographyActivity extends AppCompatActivity {
 
         //Set up header
         Objects.requireNonNull(getSupportActionBar()).setTitle("Bibliography");
-        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.colorPrimary)));
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(ContextCompat.getColor(this, R.color.colorPrimary)));
+
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         //Set up recycler view

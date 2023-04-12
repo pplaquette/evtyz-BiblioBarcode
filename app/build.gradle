@@ -1,8 +1,17 @@
-apply plugin: 'com.android.application'
+
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'kotlin-parcelize'
+    id 'androidx.navigation.safeargs.kotlin'
+   // id 'kotlin-kapt'
+    //id 'com.google.gms.google-services'
+}
 
 android {
-    compileSdkVersion 29
-    buildToolsVersion "29.0.3"
+    namespace 'com.evanzheng.bibliobarcode'
+    compileSdkVersion 33
+    buildToolsVersion "33.0.2"
 
     packagingOptions {
         exclude 'META-INF/DEPENDENCIES'
@@ -10,10 +19,10 @@ android {
 
     defaultConfig {
         applicationId "com.evanzheng.bibliobarcode"
-        minSdkVersion 21
-        targetSdkVersion 29
-        versionCode 1
-        versionName "1.0"
+        minSdkVersion 24
+        targetSdkVersion 33
+        versionCode Integer.valueOf(System.env.VERSION_CODE ?: 2)
+        versionName "1.0.0-${System.env.VERSION_SHA}"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -24,48 +33,67 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+    java {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(11))
+        }
     }
+
+//    kotlinOptions {
+//        jvmTarget = "11"
+//    }
 
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    //implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    def camerax_version = "1.0.0-beta01"
-    def acraVersion = '5.5.0'
+    //def camerax_version = '1.3.0-alpha05'
+
+    def acraVersion = '5.9.7'
+    implementation("ch.acra:acra-mail:$acraVersion")
+    implementation("ch.acra:acra-core:$acraVersion")
+    implementation("ch.acra:acra-dialog:$acraVersion")
+    implementation("ch.acra:acra-notification:$acraVersion")
+    implementation("ch.acra:acra-notification:$acraVersion")
+    implementation("ch.acra:acra-limiter:$acraVersion")
+    implementation("ch.acra:acra-advanced-scheduler:$acraVersion")
+
+    //noinspection GradleDependency
+    implementation "androidx.camera:camera-core:1.2.2"
+    //noinspection GradleDependency
+    implementation "androidx.camera:camera-camera2:1.2.2"
+    //noinspection GradleDependency
+    implementation 'androidx.camera:camera-view:1.2.2'
+    //noinspection GradleDependency
+    implementation 'androidx.camera:camera-extensions:1.2.2'
+    //noinspection GradleDependency
+    implementation "androidx.camera:camera-lifecycle:1.2.2"
+    implementation 'com.google.android.gms:play-services-vision:20.1.3'
+    implementation 'com.google.android.material:material:1.8.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.api-client:google-api-client:2.2.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'com.android.volley:volley:1.2.1'
+
+    def room_version = "2.5.1"
+
+    implementation "androidx.room:room-runtime:$room_version"
+    annotationProcessor "androidx.room:room-compiler:$room_version"
+
+    // To use Kotlin annotation processing tool (kapt)
+//    kapt "androidx.room:room-compiler:$room_version"
 
 
-    implementation "ch.acra:acra-mail:$acraVersion"
-    //noinspection GradleDependency
-    implementation "androidx.camera:camera-core:${camerax_version}"
-    //noinspection GradleDependency
-    implementation "androidx.camera:camera-camera2:${camerax_version}"
-    //noinspection GradleDependency
-    implementation "androidx.camera:camera-view:1.0.0-alpha08"
-    //noinspection GradleDependency
-    implementation "androidx.camera:camera-extensions:1.0.0-alpha08"
-    //noinspection GradleDependency
-    implementation "androidx.camera:camera-lifecycle:${camerax_version}"
-    implementation 'com.google.android.gms:play-services-vision:19.0.0'
-    implementation 'com.google.android.material:material:1.1.0'
-    implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'com.google.api-client:google-api-client:1.30.9'
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    implementation 'com.android.volley:volley:1.1.1'
-    implementation "androidx.room:room-runtime:2.2.5"
-    implementation 'androidx.recyclerview:recyclerview:1.1.0'
-    implementation 'androidx.core:core:1.2.0'
+    implementation 'androidx.recyclerview:recyclerview:1.3.0'
+    implementation 'androidx.core:core:1.10.0'
     implementation 'com.github.deano2390:MaterialShowcaseView:1.3.4@aar'
 
-    annotationProcessor "androidx.room:room-compiler:2.2.5"
+    annotationProcessor 'androidx.room:room-compiler:2.5.1'
 
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
-    implementation 'org.jetbrains:annotations:15.0'
+    implementation 'org.jetbrains:annotations:24.0.1'
 }

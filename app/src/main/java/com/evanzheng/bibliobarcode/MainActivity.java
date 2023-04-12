@@ -289,7 +289,7 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
                 .build();
 
         //Linking preview to our previewview
-        preview.setSurfaceProvider(viewfinder.getPreviewSurfaceProvider());
+        preview.setSurfaceProvider(viewfinder.getSurfaceProvider());    //getPreviewSurfaceProvider() PPL
 
         CameraSelector cameraSelector = new CameraSelector.Builder()
                 .requireLensFacing(CameraSelector.LENS_FACING_BACK)
