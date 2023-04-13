@@ -21,6 +21,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.camera2.Camera2Config;
 import androidx.camera.core.CameraSelector;
@@ -79,6 +80,8 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
     private final ImageCapture.OnImageCapturedCallback captureProcess = new ImageCapture.OnImageCapturedCallback() {
         @Override
         public void onCaptureSuccess(@NonNull ImageProxy imageproxy) {
+            //PPL
+            @OptIn(markerClass = androidx.camera.core.ExperimentalGetImage.class)
             @SuppressLint("UnsafeExperimentalUsageError") Image image = imageproxy.getImage();
             assert image != null;
             Bitmap bitmap = BarcodeHelper.imageToBitmap(image);
@@ -120,6 +123,9 @@ public class MainActivity extends AppCompatActivity implements CameraXConfig.Pro
     // Credit to Superpowered Effects Library
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+
+        super.onRequestPermissionsResult(requestCode,  permissions,  grantResults); //PPL
+
         // Called when the user answers to the permission dialogs.
         if ((requestCode != 0) || (grantResults.length < 1) || (grantResults.length != permissions.length))
             return;

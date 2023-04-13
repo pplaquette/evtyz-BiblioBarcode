@@ -60,8 +60,7 @@ public class BibliographyActivity extends AppCompatActivity {
     private FloatingActionButton copyButton;
 
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bibliography);
 
@@ -98,9 +97,9 @@ public class BibliographyActivity extends AppCompatActivity {
         //Set up recycler view swipe listener
         //This is for swipe-to-delete
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new SwipeDeleteListener(adapter) {
-            @Override
             public void onSwiped(@NotNull RecyclerView.ViewHolder viewHolder, int direction) {
-                int position = viewHolder.getAdapterPosition();
+                //int position = viewHolder.getAdapterPosition(); PPL
+                int position = viewHolder.getBindingAdapterPosition();
                 deleteItem(position);
             }
         });
@@ -192,10 +191,10 @@ public class BibliographyActivity extends AppCompatActivity {
 
         //Change colours based on whether it's supposed to be focusing/defocusing
         if (focus) {
-            textC = getResources().getColor(R.color.colorWhite);
+            textC = this.getColor(R.color.colorWhite);   //PPL
             bgID = R.drawable.pill_activated;
         } else {
-            textC = getResources().getColor(R.color.greyText);
+            textC = this.getColor(R.color.greyText); //PPL
             bgID = R.drawable.pill_deactivated;
         }
 

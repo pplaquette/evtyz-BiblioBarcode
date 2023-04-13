@@ -10,13 +10,15 @@ package com.evanzheng.bibliobarcode;
 import android.app.Application;
 import android.content.Context;
 
+import androidx.multidex.MultiDex;
+
 import org.acra.ACRA;
 
 //Implements a error-reporting system so I can receive error messages from crashes on other devices
 public class BaseApplication extends Application {
-    @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
+        MultiDex.install(this);
 
         ACRA.init(this);
     }
