@@ -1,14 +1,6 @@
-package com.evanzheng.bibliobarcode;
+package com.evanzheng.bibliobarcode
+
+import android.view.View
 
 //A custom implementation of an OnClickListener with an id field.
-
-import android.view.View;
-
-abstract class AuthorDeleteListener implements View.OnClickListener {
-    final int id;
-
-    AuthorDeleteListener(int id) {
-        this.id = id;
-    }
-
-}
+internal abstract class AuthorDeleteListener(val id: Int) : View.OnClickListener

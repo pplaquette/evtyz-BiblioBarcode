@@ -1,364 +1,301 @@
-package com.evanzheng.bibliobarcode;
+package com.evanzheng.bibliobarcode
 
-import android.text.Spanned;
-
-import androidx.annotation.NonNull;
-import androidx.core.text.HtmlCompat;
-import androidx.room.ColumnInfo;
-import androidx.room.Entity;
-import androidx.room.Ignore;
-import androidx.room.PrimaryKey;
-import androidx.room.TypeConverters;
-
-import org.jetbrains.annotations.NotNull;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import android.text.Spanned
+import androidx.core.text.HtmlCompat
+import androidx.room.*
+import org.json.JSONException
+import org.json.JSONObject
+import java.util.*
 
 // We use a type converter because authors cannot be stored in an sql database without being converted into strings
-@SuppressWarnings("WeakerAccess")
 @Entity(tableName = "books")
-@TypeConverters(AuthorConverter.class)
-public class Book implements Comparable<Book> {
-
+@TypeConverters(AuthorConverter::class)
+class Book : Comparable<Book> {
     //ISBNs must be unique.
+    @JvmField
     @PrimaryKey
-    @NonNull
-    public final String isbn;
+    val isbn: String
 
     //Fields in SQL database
+    @JvmField
     @ColumnInfo(name = "title")
-    public String title;
+    var title: String? = null
 
+    @JvmField
     @ColumnInfo(name = "authors")
-    public List<Author> authors;
+    var authors: MutableList<Author?>
 
+    @JvmField
     @ColumnInfo(name = "publisher")
-    public String publisher;
+    var publisher: String? = null
 
+    @JvmField
     @ColumnInfo(name = "year")
-    public String year;
+    var year: String? = null
 
+    @JvmField
     @ColumnInfo(name = "city")
-    public String city;
+    var city: String?
 
+    @JvmField
     @ColumnInfo(name = "state")
-    public String state;
+    var state: String?
 
     //Citations (which we can build on the spot, for space efficiency)
     @Ignore
-    public String citation;
+    var citation: String? = null
 
     @Ignore
-    public String rawFormatCitation;
+    var rawFormatCitation: String? = null
 
     //When we call a book from the database, this is what is used to build it.
-    public Book(@NotNull String isbn, String title, List<Author> authors, String publisher, String year, String city, String state) {
-        this.isbn = isbn;
-        this.title = title;
-        this.authors = authors;
-        this.publisher = publisher;
-        this.year = year;
-        this.city = city;
-        this.state = state;
+    constructor(
+        isbn: String,
+        title: String?,
+        authors: MutableList<Author?>,
+        publisher: String?,
+        year: String?,
+        city: String?,
+        state: String?
+    ) {
+        this.isbn = isbn
+        this.title = title
+        this.authors = authors
+        this.publisher = publisher
+        this.year = year
+        this.city = city
+        this.state = state
     }
 
     //Constructor for book when we get a JSON file to parse.
     @Ignore
-    Book(JSONObject info, @NotNull String isbn) {
-        this.isbn = isbn;
-
-        try {
-            title = info.getString("title");
-        } catch (JSONException e) {
-            title = "";
+    internal constructor(info: JSONObject, isbn: String) {
+        this.isbn = isbn
+        title = try {
+            info.getString("title")
+        } catch (e: JSONException) {
+            ""
         }
-
-        authors = new ArrayList<>();
+        authors = ArrayList()
         try {
-            JSONArray rawAuthors = info.getJSONArray("authors");
-            int numAuthors = rawAuthors.length();
-            for (int i = 0; i < numAuthors; i++) {
-                String name = rawAuthors.getString(i);
-                authors.add(new Author(name));
+            val rawAuthors = info.getJSONArray("authors")
+            val numAuthors = rawAuthors.length()
+            for (i in 0 until numAuthors) {
+                val name = rawAuthors.getString(i)
+                authors.add(Author(name))
             }
             //Authors must be in alphabetical order
-            Collections.sort(authors);
-        } catch (JSONException ignored) {
+            Collections.sort(authors)
+        } catch (ignored: JSONException) {
         }
-
+        publisher = try {
+            info.getString("publisher")
+        } catch (e: JSONException) {
+            ""
+        }
         try {
-            publisher = info.getString("publisher");
-        } catch (JSONException e) {
-            publisher = "";
-
+            year = info.getString("publishedDate")
+            year = year.substring(0, Math.min(year.length, 4))
+        } catch (e: JSONException) {
+            year = ""
         }
-
-        try {
-            year = info.getString("publishedDate");
-            year = year.substring(0, Math.min(year.length(), 4));
-        } catch (JSONException e) {
-            year = "";
-        }
-
-        city = "";
-        state = "";
+        city = ""
+        state = ""
     }
 
     //Creating an empty book with fake ISBN
-    Book(@NotNull String code) {
-        isbn = code;
-        title = "";
-        authors = new ArrayList<>();
-        publisher = "";
-        year = "";
-        city = "";
-        state = "";
+    internal constructor(code: String) {
+        isbn = code
+        title = ""
+        authors = ArrayList()
+        publisher = ""
+        year = ""
+        city = ""
+        state = ""
     }
 
     //Conversion between hashmap and book
-    void infoMapToList(Map<String, String> bookInfo) {
-        title = bookInfo.get("title");
-        publisher = bookInfo.get("publisher");
-        year = bookInfo.get("year");
-        city = bookInfo.get("city");
-        state = bookInfo.get("state");
+    fun infoMapToList(bookInfo: Map<String?, String?>) {
+        title = bookInfo["title"]
+        publisher = bookInfo["publisher"]
+        year = bookInfo["year"]
+        city = bookInfo["city"]
+        state = bookInfo["state"]
     }
 
     //Converts hashmap to author list and string
-    void authorMapToList(Map<Integer, Author> authorMap) {
-        authors = new ArrayList<>();
-        for (int i : authorMap.keySet()) {
-            authors.add(authorMap.get(i));
+    fun authorMapToList(authorMap: Map<Int, Author?>) {
+        authors = ArrayList()
+        for (i in authorMap.keys) {
+            authors.add(authorMap[i])
         }
-        Collections.sort(authors);
+        Collections.sort(authors)
     }
 
     //Cites the book based on a style
-    void cite(String style) {
+    fun cite(style: String?) {
         //HTML citation
-        rawFormatCitation = "";
+        rawFormatCitation = ""
         //Plain text citation
-        citation = "";
-        String authorCite;
-        String titleCite;
-        String publisherCite;
-        String yearCite;
-        String cityCite;
-        String stateCite;
-
-
-        switch (style) {
-            case "MLA":
-                authorCite = "";
-
-                if (authors.size() != 0 && authors.get(0).isNotEmpty()) {
-                    authorCite = authorCite.concat(authors.get(0).formattedName());
-                    for (int i = 1; i < authors.size(); i++) {
-                        if (i == authors.size() - 1) {
-                            authorCite = authorCite.concat(", and ");
+        citation = ""
+        var authorCite: String
+        val titleCite: String
+        val publisherCite: String
+        var yearCite: String
+        val cityCite: String
+        val stateCite: String
+        when (style) {
+            "MLA" -> {
+                authorCite = ""
+                if (authors.size != 0 && authors[0]!!.isNotEmpty) {
+                    authorCite = authorCite + authors[0]!!.formattedName()
+                    var i = 1
+                    while (i < authors.size) {
+                        authorCite = if (i == authors.size - 1) {
+                            "$authorCite, and "
                         } else {
-                            authorCite = authorCite.concat(", ");
+                            "$authorCite, "
                         }
-                        authorCite = authorCite.concat(authors.get(i).fullName());
+                        authorCite = authorCite + authors[i]!!.fullName()
+                        i++
                     }
-                    authorCite = authorCite.concat(". ");
+                    authorCite = "$authorCite. "
                 }
-
-                titleCite = title.concat(". ");
-
-                if (publisher.equals("")) {
-                    publisherCite = "n.p., ";
+                titleCite = "$title. "
+                publisherCite = if (publisher == "") {
+                    "n.p., "
                 } else {
-                    publisherCite = publisher.concat(", ");
+                    "$publisher, "
                 }
-
-                if (year.equals("")) {
-                    yearCite = "n.d.";
+                yearCite = if (year == "") {
+                    "n.d."
                 } else {
-                    yearCite = year.concat(".");
+                    "$year."
                 }
-
                 citation = authorCite
-                        .concat(titleCite)
-                        .concat(publisherCite)
-                        .concat(yearCite);
-
+                +titleCite + publisherCite + yearCite
                 rawFormatCitation = authorCite
-                        .concat("<i>")
-                        .concat(titleCite)
-                        .concat("</i>")
-                        .concat(publisherCite)
-                        .concat(yearCite);
-                break;
-
-            case "APA":
-                authorCite = "";
-                for (int i = 0; i < authors.size(); i++) {
-                    authorCite = authorCite.concat(authors.get(i).formattedInitializedName());
-                    if (i != authors.size() - 1) {
-                        authorCite = authorCite.concat(", ");
+                +"<i>" + titleCite + "</i>" + publisherCite + yearCite
+            }
+            "APA" -> {
+                authorCite = ""
+                var i = 0
+                while (i < authors.size) {
+                    authorCite = authorCite + authors[i]!!.formattedInitializedName()
+                    if (i != authors.size - 1) {
+                        authorCite = "$authorCite, "
                     }
-                    if (i == authors.size() - 2) {
-                        authorCite = authorCite.concat(" & ");
+                    if (i == authors.size - 2) {
+                        authorCite = "$authorCite & "
                     }
+                    i++
                 }
-
-                yearCite = " (";
-                if (year.equals("")) {
-                    yearCite = yearCite.concat("n.d.");
+                yearCite = " ("
+                yearCite = if (year == "") {
+                    yearCite + "n.d."
                 } else {
-                    yearCite = yearCite.concat(year);
+                    yearCite + year
                 }
-                yearCite = yearCite.concat("). ");
-
-                titleCite = title.concat(". ");
-
-                if (city.equals("") || state.equals("")) {
-                    cityCite = "N.p.: ";
-                    stateCite = "";
+                yearCite = "$yearCite). "
+                titleCite = "$title. "
+                if (city == "" || state == "") {
+                    cityCite = "N.p.: "
+                    stateCite = ""
                 } else {
-                    cityCite = city.concat(", ");
-                    stateCite = state.concat(": ");
+                    cityCite = "$city, "
+                    stateCite = "$state: "
                 }
-
-                if (publisher.equals("")) {
-                    publisherCite = "n.p.";
+                publisherCite = if (publisher == "") {
+                    "n.p."
                 } else {
-                    publisherCite = publisher.concat(".");
+                    "$publisher."
                 }
-
                 rawFormatCitation = authorCite
-                        .concat(yearCite)
-                        .concat("<i>")
-                        .concat(titleCite)
-                        .concat("</i>")
-                        .concat(cityCite)
-                        .concat(stateCite)
-                        .concat(publisherCite);
-
+                +yearCite + "<i>" + titleCite + "</i>" + cityCite + stateCite + publisherCite
                 citation = authorCite
-                        .concat(yearCite)
-                        .concat(titleCite)
-                        .concat(cityCite)
-                        .concat(stateCite)
-                        .concat(publisherCite);
-
-                break;
-            case "Chicago":
-                authorCite = "";
-                if (authors.size() != 0 && authors.get(0).isNotEmpty()) {
-                    authorCite = authorCite.concat(authors.get(0).formattedName());
-                    for (int i = 1; i < authors.size(); i++) {
-                        if (i == authors.size() - 1) {
-                            authorCite = authorCite.concat(", and ");
+                +yearCite + titleCite + cityCite + stateCite + publisherCite
+            }
+            "Chicago" -> {
+                authorCite = ""
+                if (authors.size != 0 && authors[0]!!.isNotEmpty) {
+                    authorCite = authorCite + authors[0]!!.formattedName()
+                    var i = 1
+                    while (i < authors.size) {
+                        authorCite = if (i == authors.size - 1) {
+                            "$authorCite, and "
                         } else {
-                            authorCite = authorCite.concat(", ");
+                            "$authorCite, "
                         }
-                        authorCite = authorCite.concat(authors.get(i).fullName());
+                        authorCite = authorCite + authors[i]!!.fullName()
+                        i++
                     }
-                    authorCite = authorCite.concat(". ");
+                    authorCite = "$authorCite. "
                 }
-
-                titleCite = title.concat(". ");
-
-                if (city.equals("")) {
-                    cityCite = "N.p.: ";
+                titleCite = "$title. "
+                cityCite = if (city == "") {
+                    "N.p.: "
                 } else {
-                    cityCite = city.concat(": ");
+                    "$city: "
                 }
-
-                if (publisher.equals("")) {
-                    publisherCite = "n.p., ";
+                publisherCite = if (publisher == "") {
+                    "n.p., "
                 } else {
-                    publisherCite = publisher.concat(", ");
+                    "$publisher, "
                 }
-
-                if (year.equals("")) {
-                    yearCite = "n.d.";
+                yearCite = if (year == "") {
+                    "n.d."
                 } else {
-                    yearCite = year.concat(".");
+                    "$year."
                 }
-
                 rawFormatCitation = authorCite
-                        .concat("<i>")
-                        .concat(titleCite)
-                        .concat("</i>")
-                        .concat(cityCite)
-                        .concat(publisherCite)
-                        .concat(yearCite);
-
+                +"<i>" + titleCite + "</i>" + cityCite + publisherCite + yearCite
                 citation = authorCite
-                        .concat(titleCite)
-                        .concat(cityCite)
-                        .concat(publisherCite)
-                        .concat(yearCite);
-
-                break;
-            case "Harvard":
-                authorCite = "";
-                if (authors.size() != 0 && authors.get(0).isNotEmpty()) {
-                    for (int i = 0; i < authors.size(); i++) {
-                        authorCite = authorCite.concat(authors.get(i).formattedInitializedName()).concat(", ");
-                        if (i == authors.size() - 2) {
-                            authorCite = authorCite.concat(" and ");
+                +titleCite + cityCite + publisherCite + yearCite
+            }
+            "Harvard" -> {
+                authorCite = ""
+                if (authors.size != 0 && authors[0]!!.isNotEmpty) {
+                    var i = 0
+                    while (i < authors.size) {
+                        authorCite = authorCite + authors[i]!!.formattedInitializedName() + ", "
+                        if (i == authors.size - 2) {
+                            authorCite = "$authorCite and "
                         }
+                        i++
                     }
                 }
-                if (year.equals("")) {
-                    yearCite = "n.d. ";
+                yearCite = if (year == "") {
+                    "n.d. "
                 } else {
-                    yearCite = year.concat(". ");
+                    "$year. "
                 }
-
-                titleCite = title.concat(". ");
-
-                if (city.equals("")) {
-                    cityCite = "N.p.: ";
+                titleCite = "$title. "
+                cityCite = if (city == "") {
+                    "N.p.: "
                 } else {
-                    cityCite = city.concat(": ");
+                    "$city: "
                 }
-
-                if (publisher.equals("")) {
-                    publisherCite = "n.p.";
+                publisherCite = if (publisher == "") {
+                    "n.p."
                 } else {
-                    publisherCite = publisher.concat(".");
+                    "$publisher."
                 }
-
                 rawFormatCitation = authorCite
-                        .concat(yearCite)
-                        .concat("<i>")
-                        .concat(titleCite)
-                        .concat("</i>")
-                        .concat(cityCite)
-                        .concat(publisherCite);
-
+                +yearCite + "<i>" + titleCite + "</i>" + cityCite + publisherCite
                 citation = authorCite
-                        .concat(yearCite)
-                        .concat(titleCite)
-                        .concat(cityCite)
-                        .concat(publisherCite);
-
-                break;
-            default:
-                rawFormatCitation = title.concat(" Citation error");
-                break;
+                +yearCite + titleCite + cityCite + publisherCite
+            }
+            else -> rawFormatCitation = "$title Citation error"
         }
     }
 
     //Gets the citation of the current style, in HTML form.
-    Spanned getCitation() {
-        return HtmlCompat.fromHtml(rawFormatCitation, HtmlCompat.FROM_HTML_MODE_LEGACY);
+    fun getCitation(): Spanned {
+        return HtmlCompat.fromHtml(rawFormatCitation!!, HtmlCompat.FROM_HTML_MODE_LEGACY)
     }
 
     //Implements comparable interface, where we compare books by alphabetical order of citation (to sort the bibliography)
-    @Override
-    public int compareTo(Book book) {
-        return citation.compareTo(book.citation);
+    override fun compareTo(book: Book): Int {
+        return citation!!.compareTo(book.citation!!)
     }
 }

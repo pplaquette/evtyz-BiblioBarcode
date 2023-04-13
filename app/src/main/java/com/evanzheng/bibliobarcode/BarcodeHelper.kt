@@ -1,85 +1,87 @@
-package com.evanzheng.bibliobarcode;
+package com.evanzheng.bibliobarcode
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.media.Image;
-import android.widget.Toast;
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.media.Image
+import android.widget.Toast
 
-import androidx.annotation.NonNull;
-
-import java.nio.ByteBuffer;
-import java.util.List;
-
-class BarcodeHelper {
-
-
+internal object BarcodeHelper {
     //Converting image to Bitmap object, courtesy of Rod_Algonquin at https://stackoverflow.com/questions/41775968/how-to-convert-android-media-image-to-bitmap-object
-    static Bitmap imageToBitmap(Image image) {
-        ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-        byte[] bytes = new byte[buffer.capacity()];
-        buffer.get(bytes);
-        return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
+    @JvmStatic
+    fun imageToBitmap(image: Image): Bitmap {
+        val buffer = image.planes[0].buffer
+        val bytes = ByteArray(buffer.capacity())
+        buffer[bytes]
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.size, null)
     }
 
     //Checks if code is ISBN based on algorithm here: https://en.wikipedia.org/wiki/International_Standard_Book_Number
-    private static boolean isISBN(@NonNull String code) {
-        if (code.length() == 13) {
-            boolean weightThree = false;
-            int checkSum = 0;
-            for (int i = 0; i < 13; i++) {
-                char c = code.charAt(i);
+    private fun isISBN(code: String): Boolean {
+        return if (code.length == 13) {
+            var weightThree = false
+            var checkSum = 0
+            for (i in 0..12) {
+                val c = code[i]
                 if (Character.isDigit(c)) {
-                    int digit = Character.getNumericValue(c);
+                    var digit = Character.getNumericValue(c)
                     if (weightThree) {
-                        digit = digit * 3;
+                        digit = digit * 3
                     }
-                    weightThree = !weightThree;
-                    checkSum = checkSum + digit;
+                    weightThree = !weightThree
+                    checkSum = checkSum + digit
                 } else {
-                    return false;
+                    return false
                 }
             }
-            return checkSum % 10 == 0;
-        } else if (code.length() == 10) {
-            int checkSum = 0;
-            for (int i = 0; i < 10; i++) {
-                char c = code.charAt(i);
-                if (Character.isDigit(c)) {
-                    int digit = Character.getNumericValue(c) * (10 - i);
-                    checkSum = checkSum + digit;
+            checkSum % 10 == 0
+        } else if (code.length == 10) {
+            var checkSum = 0
+            for (i in 0..9) {
+                val c = code[i]
+                checkSum = if (Character.isDigit(c)) {
+                    val digit = Character.getNumericValue(c) * (10 - i)
+                    checkSum + digit
                 } else {
-                    return false;
+                    return false
                 }
             }
-            return checkSum % 11 == 0;
+            checkSum % 11 == 0
         } else {
-            return false;
+            false
         }
     }
 
     //Checks if an ISBN is already in the SQL database
-    private static boolean notInDatabase(String isbn) {
-        List<String> isbnList = MainActivity.database.bookDao().loadISBN();
-        for (String s : isbnList) {
-            if (isbn.equals(s)) {
-                return false;
+    private fun notInDatabase(isbn: String): Boolean {
+        val isbnList = MainActivity.database?.bookDao()?.loadISBN()
+        for (s in isbnList!!) {
+            if (isbn == s) {
+                return false
             }
         }
-        return true;
+        return true
     }
 
     //Checks if code is valid
-    static boolean checkCode(String code, Context context) {
+    @JvmStatic
+    fun checkCode(code: String, context: Context?): Boolean {
         if (!isISBN(code)) {
-            Toast.makeText(context, "We didn't detect a valid ISBN. Please try again.", Toast.LENGTH_SHORT).show();
-            return false;
+            Toast.makeText(
+                context,
+                "We didn't detect a valid ISBN. Please try again.",
+                Toast.LENGTH_SHORT
+            ).show()
+            return false
         }
         if (!notInDatabase(code)) {
-            Toast.makeText(context, "A book with this ISBN is already cited. Please delete it, then try again.", Toast.LENGTH_LONG).show();
-            return false;
+            Toast.makeText(
+                context,
+                "A book with this ISBN is already cited. Please delete it, then try again.",
+                Toast.LENGTH_LONG
+            ).show()
+            return false
         }
-        return true;
+        return true
     }
-
 }

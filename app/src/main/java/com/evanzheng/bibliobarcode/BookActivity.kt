@@ -1,417 +1,407 @@
-package com.evanzheng.bibliobarcode;
+package com.evanzheng.bibliobarcode
 
+import android.annotation.SuppressLint
+import android.app.SearchManager
+import android.content.Intent
+import android.content.SharedPreferences
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import android.widget.*
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import com.android.volley.Request
+import com.android.volley.RequestQueue
+import com.android.volley.VolleyError
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import org.json.JSONException
+import org.json.JSONObject
+import uk.co.deanwild.materialshowcaseview.MaterialShowcaseSequence
+import uk.co.deanwild.materialshowcaseview.ShowcaseConfig
+import java.util.*
 
-import android.annotation.SuppressLint;
-import android.app.SearchManager;
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
-import uk.co.deanwild.materialshowcaseview.MaterialShowcaseSequence;
-import uk.co.deanwild.materialshowcaseview.ShowcaseConfig;
-
-public class BookActivity extends AppCompatActivity {
-
+class BookActivity : AppCompatActivity() {
     //Initialize Volley Request Queue
-    private RequestQueue requestQueue;
-
-    private SharedPreferences sharedPref;
-
+    private var requestQueue: RequestQueue? = null
+    private var sharedPref: SharedPreferences? = null
 
     //Initialize book
-    private Book book;
+    private var book: Book? = null
 
     //Initialize the maps that we will use to edit the book
-    private Map<Integer, Author> authors;
-    private Map<String, String> bookInfo;
+    private var authors: MutableMap<Int, Author?>? = null
+    private var bookInfo: MutableMap<String?, String?>? = null
 
     //Making new authors with unique ids so that editing remains consistent
-    private int nextAuthorId;
+    private var nextAuthorId = 0
 
     //Is this book new or was it already in the bibliography?
-    private boolean isNew;
+    private var isNew = false
 
     //Initialize views
-    private LayoutInflater layoutInflater;
-    private ViewGroup viewGroup;
-    private Button searchButton;
-    private ViewGroup fieldAuthorEdit;
-    private FloatingActionButton saveButton;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_book);
+    private var layoutInflater: LayoutInflater? = null
+    private var viewGroup: ViewGroup? = null
+    private var searchButton: Button? = null
+    private var fieldAuthorEdit: ViewGroup? = null
+    private var saveButton: FloatingActionButton? = null
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_book)
 
         //Set up views
-        saveButton = findViewById(R.id.addToBibliography);
-        saveButton.setOnClickListener(v -> addToBibliography());
+        saveButton = findViewById(R.id.addToBibliography)
+        saveButton?.setOnClickListener(View.OnClickListener { v: View? -> addToBibliography() })
 
         //Initialize toolbar and views
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setTitle("Edit Info:");
-        setSupportActionBar(toolbar);
-        Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(true);
-        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-
-        viewGroup = findViewById(R.id.listFields);
-        searchButton = findViewById(R.id.searchLocation);
-        searchButton.setVisibility(View.INVISIBLE);
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        title = "Edit Info:"
+        setSupportActionBar(toolbar)
+        Objects.requireNonNull(supportActionBar).setDisplayShowHomeEnabled(true)
+        Objects.requireNonNull(supportActionBar).setDisplayHomeAsUpEnabled(true)
+        viewGroup = findViewById(R.id.listFields)
+        searchButton = findViewById(R.id.searchLocation)
+        searchButton?.setVisibility(View.INVISIBLE)
 
         //Set up layout inflater
-        layoutInflater = getLayoutInflater();
+        layoutInflater = getLayoutInflater()
 
         // Set up request queue
-        requestQueue = Volley.newRequestQueue(getApplicationContext());
-
-        Intent intent = getIntent();
+        requestQueue = Volley.newRequestQueue(applicationContext)
+        val intent = intent
 
         //How did we enter this activity?
-        String code = intent.getStringExtra("barcode");
+        var code = intent.getStringExtra("barcode")
         if (code == null) {
-            code = intent.getStringExtra("isbn");
+            code = intent.getStringExtra("isbn")
             if (code == null) {
                 // We entered it via generating an empty book
-                code = intent.getStringExtra("empty");
-                isNew = true;
-                assert code != null;
-                book = new Book(code);
-                processAuthors();
-                processBook();
+                code = intent.getStringExtra("empty")
+                isNew = true
+                assert(code != null)
+                book = Book(code!!)
+                processAuthors()
+                processBook()
             } else {
                 // We entered it via editing an existing book
-                book = MainActivity.database.bookDao().loadBook(code);
-                isNew = false;
-                saveButton.setImageResource(R.drawable.content_save);
-                processAuthors();
-                processBook();
+                book = MainActivity.database.bookDao().loadBook(code)
+                isNew = false
+                saveButton?.setImageResource(R.drawable.content_save)
+                processAuthors()
+                processBook()
             }
         } else {
             // We entered it via scanning or entering an ISBN
-            isNew = true;
-            loadBook(code);
+            isNew = true
+            loadBook(code)
         }
 
 
         //Run tutorial if necessary
-        sharedPref = this.getPreferences(Context.MODE_PRIVATE);
-        boolean ranBefore = sharedPref.getBoolean("edit", false);
-
-        if (!ranBefore) {
-            runTutorial();
+        sharedPref = getPreferences(MODE_PRIVATE)
+        val ranBefore = sharedPref?.getBoolean("edit", false)
+        if (!ranBefore!!) {
+            runTutorial()
         }
-
     }
 
     //Runs tutorial
-    private void runTutorial() {
-        ShowcaseConfig tutorialConfig = new ShowcaseConfig();
-        tutorialConfig.setDelay(500);
-
-        LinearLayout placeholder = findViewById(R.id.placeholder);
-
-        MaterialShowcaseSequence tutorial = new MaterialShowcaseSequence(this, "smthdif2");
-
-        tutorial.setConfig(tutorialConfig);
-        tutorial.addSequenceItem(placeholder, "Edit your book information here", "OKAY");
-        tutorial.addSequenceItem(saveButton, "Save your book by pressing this button", "OKAY");
-        tutorial.start();
-
-        sharedPref.edit().putBoolean("edit", true).apply();
+    private fun runTutorial() {
+        val tutorialConfig = ShowcaseConfig()
+        tutorialConfig.delay = 500
+        val placeholder = findViewById<LinearLayout>(R.id.placeholder)
+        val tutorial = MaterialShowcaseSequence(this, "smthdif2")
+        tutorial.setConfig(tutorialConfig)
+        tutorial.addSequenceItem(placeholder, "Edit your book information here", "OKAY")
+        tutorial.addSequenceItem(saveButton, "Save your book by pressing this button", "OKAY")
+        tutorial.start()
+        sharedPref!!.edit().putBoolean("edit", true).apply()
     }
 
     //On pressing the back button, go back
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            onBackPressed();
-            return true;
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == android.R.id.home) {
+            onBackPressed()
+            return true
         }
-        return false;
+        return false
     }
 
     //Loads a book based on the code
-    private void loadBook(String isbn) {
+    private fun loadBook(isbn: String) {
         //First API call
-        String url = "https://www.googleapis.com/books/v1/volumes?q=isbn:"
-                .concat(isbn);
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, response -> {
+        val url = "https://www.googleapis.com/books/v1/volumes?q=isbn:"
+        +isbn
+        val request = JsonObjectRequest(Request.Method.GET, url, null, { response: JSONObject ->
             try {
                 //Gets the first item searched (book that corresponds to ISBN) and then gets the url of the selfLink
-                String specificUrl = response
-                        .getJSONArray("items")
-                        .getJSONObject(0).getString("selfLink");
+                val specificUrl = response
+                    .getJSONArray("items")
+                    .getJSONObject(0).getString("selfLink")
 
                 //Second API call
-                JsonObjectRequest specificRequest = new JsonObjectRequest(Request.Method.GET, specificUrl, null, response1 -> {
-                    try {
-                        //Gets info from API
-                        JSONObject info = response1
-                                .getJSONObject("volumeInfo");
-                        //Generates a book based on the info
-                        book = new Book(info, isbn);
-                        processAuthors();
-                        processBook();
-                    } catch (JSONException e2) {
-                        Toast.makeText(this, "We couldn't find this book. Error Code 2A", Toast.LENGTH_LONG).show();
-                        returnToCamera();
-                    }
-                }, error1 ->
-                {
-                    Toast.makeText(this, "We couldn't find this book. Error Code 2B", Toast.LENGTH_LONG).show();
-                    returnToCamera();
-                });
-
-                requestQueue.add(specificRequest);
-
-            } catch (JSONException e) {
-                Toast.makeText(this, "We couldn't find this book. Error Code 1A", Toast.LENGTH_LONG).show();
-                returnToCamera();
+                val specificRequest = JsonObjectRequest(
+                    Request.Method.GET,
+                    specificUrl,
+                    null,
+                    { response1: JSONObject ->
+                        try {
+                            //Gets info from API
+                            val info = response1
+                                .getJSONObject("volumeInfo")
+                            //Generates a book based on the info
+                            book = Book(info, isbn)
+                            processAuthors()
+                            processBook()
+                        } catch (e2: JSONException) {
+                            Toast.makeText(
+                                this,
+                                "We couldn't find this book. Error Code 2A",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            returnToCamera()
+                        }
+                    }) { error1: VolleyError? ->
+                    Toast.makeText(
+                        this,
+                        "We couldn't find this book. Error Code 2B",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    returnToCamera()
+                }
+                requestQueue!!.add(specificRequest)
+            } catch (e: JSONException) {
+                Toast.makeText(this, "We couldn't find this book. Error Code 1A", Toast.LENGTH_LONG)
+                    .show()
+                returnToCamera()
             }
-        }, error ->
-        {
-            Toast.makeText(this, "We couldn't find this book. Error Code 1B", Toast.LENGTH_SHORT).show();
-            returnToCamera();
-        });
-
-        requestQueue.add(request);
+        }) { error: VolleyError? ->
+            Toast.makeText(this, "We couldn't find this book. Error Code 1B", Toast.LENGTH_SHORT)
+                .show()
+            returnToCamera()
+        }
+        requestQueue!!.add(request)
     }
 
     //Convert book authors into hashmap
-    private void processAuthors() {
-        authors = new HashMap<>();
-        if (book.authors.size() != 0) {
-            for (int i = 0; i < book.authors.size(); i++) {
-                authors.put(i, book.authors.get(i));
+    private fun processAuthors() {
+        authors = HashMap()
+        if (book!!.authors.size != 0) {
+            for (i in book!!.authors.indices) {
+                (authors as HashMap<Int, Author?>)[i] = book!!.authors[i]
             }
         }
     }
 
     //Display the book's contents
-    private void processBook() {
+    private fun processBook() {
         //Convert book info into hashmap
-        bookInfo = new HashMap<>();
-        bookInfo.put("state", book.state);
-        bookInfo.put("city", book.city);
-        bookInfo.put("year", book.year);
-        bookInfo.put("publisher", book.publisher);
-        bookInfo.put("title", book.title);
+        bookInfo = HashMap()
+        (bookInfo as HashMap<String?, String?>)["state"] = book!!.state
+        (bookInfo as HashMap<String?, String?>)["city"] = book!!.city
+        (bookInfo as HashMap<String?, String?>)["year"] = book!!.year
+        (bookInfo as HashMap<String?, String?>)["publisher"] = book!!.publisher
+        (bookInfo as HashMap<String?, String?>)["title"] = book!!.title
 
         //Show editing fields on screen
-        showField("state", "State of Publication:", "State");
-        showField("city", "City of Publication:", "City");
-        showField("year", "Year of Publication:", "Year");
-        showField("publisher", "Publisher:", "Publisher");
-        showAuthors();
-        showField("title", "Title:", "Title");
-        searchButton.setVisibility(View.VISIBLE);
+        showField("state", "State of Publication:", "State")
+        showField("city", "City of Publication:", "City")
+        showField("year", "Year of Publication:", "Year")
+        showField("publisher", "Publisher:", "Publisher")
+        showAuthors()
+        showField("title", "Title:", "Title")
+        searchButton!!.visibility = View.VISIBLE
     }
 
     //Showing field
-    private void showField(String key, String label, String hint) {
+    private fun showField(key: String, label: String, hint: String) {
 
         //Inflate the field
-        @SuppressLint("InflateParams") View fieldLayout = layoutInflater.inflate(R.layout.field, null);
+        @SuppressLint("InflateParams") val fieldLayout =
+            layoutInflater!!.inflate(R.layout.field, null)
 
         //Set labels
-        TextView description = fieldLayout.findViewById(R.id.fieldDesc);
-        description.setText(label);
+        val description = fieldLayout.findViewById<TextView>(R.id.fieldDesc)
+        description.text = label
 
         //Load data and hints into edittexts
-        EditText titleEdit = fieldLayout.findViewById(R.id.fieldEdit);
-        titleEdit.setText(bookInfo.get(key));
-        titleEdit.setHint(hint);
+        val titleEdit = fieldLayout.findViewById<EditText>(R.id.fieldEdit)
+        titleEdit.setText(bookInfo!![key])
+        titleEdit.hint = hint
 
         //Set a listener to edit the corresponding bookinfo entry when text is changed
-        titleEdit.addTextChangedListener(new BookTextWatcher(key) {
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                bookInfo.put(key, s.toString());
+        titleEdit.addTextChangedListener(object : BookTextWatcher(key) {
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+                bookInfo!![key] = s.toString()
             }
-        });
-        viewGroup.addView(fieldLayout, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        })
+        viewGroup!!.addView(
+            fieldLayout,
+            0,
+            ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        )
     }
 
     //Shows the author fields
-    private void showAuthors() {
-        @SuppressLint("InflateParams") View authorLayout = layoutInflater.inflate(R.layout.field_author, null);
-        TextView description = authorLayout.findViewById(R.id.fieldDesc);
-        description.setText(R.string.authordesc);
-        fieldAuthorEdit = authorLayout.findViewById(R.id.fieldAuthorEdit);
-
-        viewGroup.addView(authorLayout, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-
-        nextAuthorId = book.authors.size();
+    private fun showAuthors() {
+        @SuppressLint("InflateParams") val authorLayout =
+            layoutInflater!!.inflate(R.layout.field_author, null)
+        val description = authorLayout.findViewById<TextView>(R.id.fieldDesc)
+        description.setText(R.string.authordesc)
+        fieldAuthorEdit = authorLayout.findViewById(R.id.fieldAuthorEdit)
+        viewGroup!!.addView(
+            authorLayout,
+            0,
+            ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        )
+        nextAuthorId = book!!.authors.size
 
         //Based on the number of authors:
-        for (int i = 0; i < nextAuthorId; i++) {
-
-            String first = book.authors.get(i).first;
-            String middle = book.authors.get(i).middle;
-            String last = book.authors.get(i).last;
-
-            @SuppressLint("InflateParams") View authorAdd = layoutInflater.inflate(R.layout.author_add, null);
-            EditText firstName = authorAdd.findViewById(R.id.add_first);
-            firstName.setText(first);
-            firstName.addTextChangedListener(new AuthorTextWatcher(i) {
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    Objects.requireNonNull(authors.get(id)).first = s.toString();
+        for (i in 0 until nextAuthorId) {
+            val first = book!!.authors[i]!!.first
+            val middle = book!!.authors[i]!!.middle
+            val last = book!!.authors[i]!!.last
+            @SuppressLint("InflateParams") val authorAdd =
+                layoutInflater!!.inflate(R.layout.author_add, null)
+            val firstName = authorAdd.findViewById<EditText>(R.id.add_first)
+            firstName.setText(first)
+            firstName.addTextChangedListener(object : AuthorTextWatcher(i) {
+                override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+                    Objects.requireNonNull(authors!![id]).first = s.toString()
                 }
-            });
-
-            EditText middleName = authorAdd.findViewById(R.id.add_middle);
-            middleName.setText(middle);
-            middleName.addTextChangedListener(new AuthorTextWatcher(i) {
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    Objects.requireNonNull(authors.get(id)).middle = s.toString();
+            })
+            val middleName = authorAdd.findViewById<EditText>(R.id.add_middle)
+            middleName.setText(middle)
+            middleName.addTextChangedListener(object : AuthorTextWatcher(i) {
+                override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+                    Objects.requireNonNull(authors!![id]).middle = s.toString()
                 }
-            });
-
-
-            EditText lastName = authorAdd.findViewById(R.id.add_last);
-            lastName.setText(last);
-            lastName.addTextChangedListener(new AuthorTextWatcher(i) {
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    Objects.requireNonNull(authors.get(id)).last = s.toString();
+            })
+            val lastName = authorAdd.findViewById<EditText>(R.id.add_last)
+            lastName.setText(last)
+            lastName.addTextChangedListener(object : AuthorTextWatcher(i) {
+                override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+                    Objects.requireNonNull(authors!![id]).last = s.toString()
                 }
-            });
-            fieldAuthorEdit.addView(authorAdd, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            })
+            fieldAuthorEdit?.addView(
+                authorAdd,
+                0,
+                ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            )
 
             //A delete button to remove an author
-            TextView deleteButton = authorAdd.findViewById(R.id.deleteButton);
-            deleteButton.setOnClickListener(new AuthorDeleteListener(i) {
-                @Override
-                public void onClick(View v) {
-                    authors.remove(id);
-                    fieldAuthorEdit.removeView(authorAdd);
+            val deleteButton = authorAdd.findViewById<TextView>(R.id.deleteButton)
+            deleteButton.setOnClickListener(object : AuthorDeleteListener(i) {
+                override fun onClick(v: View) {
+                    authors!!.remove(id)
+                    fieldAuthorEdit?.removeView(authorAdd)
                 }
-            });
+            })
         }
     }
 
     //Search for location of publisher
-    @SuppressWarnings("unused")
-    public void searchLocation(View view) {
-        if (Objects.equals(bookInfo.get("publisher"), "")) {
-            return;
+    fun searchLocation(view: View?) {
+        if (bookInfo!!["publisher"] == "") {
+            return
         }
-        Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
-        String keyword = Objects.requireNonNull(bookInfo.get("publisher")).concat(" publisher location");
-        intent.putExtra(SearchManager.QUERY, keyword);
-        startActivity(intent);
+        val intent = Intent(Intent.ACTION_WEB_SEARCH)
+        val keyword = Objects.requireNonNull(bookInfo!!["publisher"]) + " publisher location"
+        intent.putExtra(SearchManager.QUERY, keyword)
+        startActivity(intent)
     }
 
     //Add an author
-    @SuppressWarnings("unused")
-    public void addAuthor(View v) {
-        @SuppressLint("InflateParams") View authorAdd = layoutInflater.inflate(R.layout.author_add, null);
-
-        Author newAuthor = new Author();
+    fun addAuthor(v: View?) {
+        @SuppressLint("InflateParams") val authorAdd =
+            layoutInflater!!.inflate(R.layout.author_add, null)
+        val newAuthor = Author()
 
         //Add to hashmap
-        authors.put(nextAuthorId, newAuthor);
-
-        EditText firstName = authorAdd.findViewById(R.id.add_first);
-        firstName.addTextChangedListener(new AuthorTextWatcher(nextAuthorId) {
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                Objects.requireNonNull(authors.get(id)).first = s.toString();
+        authors!![nextAuthorId] = newAuthor
+        val firstName = authorAdd.findViewById<EditText>(R.id.add_first)
+        firstName.addTextChangedListener(object : AuthorTextWatcher(nextAuthorId) {
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+                Objects.requireNonNull(authors!![id]).first = s.toString()
             }
-        });
-
-        EditText middleName = authorAdd.findViewById(R.id.add_middle);
-        middleName.addTextChangedListener(new AuthorTextWatcher(nextAuthorId) {
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                Objects.requireNonNull(authors.get(id)).middle = s.toString();
+        })
+        val middleName = authorAdd.findViewById<EditText>(R.id.add_middle)
+        middleName.addTextChangedListener(object : AuthorTextWatcher(nextAuthorId) {
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+                Objects.requireNonNull(authors!![id]).middle = s.toString()
             }
-        });
-
-
-        EditText lastName = authorAdd.findViewById(R.id.add_last);
-        lastName.addTextChangedListener(new AuthorTextWatcher(nextAuthorId) {
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                Objects.requireNonNull(authors.get(id)).last = s.toString();
+        })
+        val lastName = authorAdd.findViewById<EditText>(R.id.add_last)
+        lastName.addTextChangedListener(object : AuthorTextWatcher(nextAuthorId) {
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+                Objects.requireNonNull(authors!![id]).last = s.toString()
             }
-        });
-
-        fieldAuthorEdit.addView(authorAdd, fieldAuthorEdit.getChildCount(), new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-
-        TextView deleteButton = authorAdd.findViewById(R.id.deleteButton);
-        deleteButton.setOnClickListener(new AuthorDeleteListener(nextAuthorId) {
-            @Override
-            public void onClick(View v) {
-                authors.remove(id);
-                fieldAuthorEdit.removeView(authorAdd);
+        })
+        fieldAuthorEdit!!.addView(
+            authorAdd,
+            fieldAuthorEdit!!.childCount,
+            ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        )
+        val deleteButton = authorAdd.findViewById<TextView>(R.id.deleteButton)
+        deleteButton.setOnClickListener(object : AuthorDeleteListener(nextAuthorId) {
+            override fun onClick(v: View) {
+                authors!!.remove(id)
+                fieldAuthorEdit!!.removeView(authorAdd)
             }
-        });
+        })
 
         //Make sure ids are unique
-        nextAuthorId++;
-
+        nextAuthorId++
     }
 
     //Add to bibliography function
-    private void addToBibliography() {
+    private fun addToBibliography() {
 
         //All books must have titles to properly cite
-        if (Objects.equals(bookInfo.get("title"), "")) {
-            Toast.makeText(this, "Not possible to cite: please add a title!", Toast.LENGTH_LONG).show();
-            return;
+        if (bookInfo!!["title"] == "") {
+            Toast.makeText(this, "Not possible to cite: please add a title!", Toast.LENGTH_LONG)
+                .show()
+            return
         }
 
 
         //Converts hashmap back to authorlist
-        book.authorMapToList(authors);
+        book!!.authorMapToList(authors!!)
 
         //Converts hashmap to book info
-        book.infoMapToList(bookInfo);
+        book!!.infoMapToList(bookInfo!!)
 
         //Inserts or updates a book
         if (isNew) {
-            MainActivity.database.bookDao().insertBook(book);
+            MainActivity.database.bookDao().insertBook(book)
         } else {
-            MainActivity.database.bookDao().updateBook(book);
+            MainActivity.database.bookDao().updateBook(book)
         }
 
         //Goes to next activity
-        Intent leaveIntent = new Intent(this, BibliographyActivity.class);
-        startActivity(leaveIntent);
+        val leaveIntent = Intent(this, BibliographyActivity::class.java)
+        startActivity(leaveIntent)
     }
 
     //Returns to camera activity
-    private void returnToCamera() {
-        Intent returnIntent = new Intent(this, MainActivity.class);
-        startActivity(returnIntent);
+    private fun returnToCamera() {
+        val returnIntent = Intent(this, MainActivity::class.java)
+        startActivity(returnIntent)
     }
 }

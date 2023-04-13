@@ -1,63 +1,64 @@
-package com.evanzheng.bibliobarcode;
+package com.evanzheng.bibliobarcode
 
-import android.content.Context;
-import android.view.GestureDetector;
-import android.view.MotionEvent;
-import android.view.View;
-
+import android.content.Context
+import android.view.GestureDetector
+import android.view.GestureDetector.SimpleOnGestureListener
+import android.view.MotionEvent
+import android.view.View
+import android.view.View.OnTouchListener
 
 //Implementation of Mirek Rusin's "OnSwipeTouchListener" from https://stackoverflow.com/questions/4139288/android-how-to-handle-right-to-left-swipe-gestures
-class OnSwipeTouchListener implements View.OnTouchListener {
-    private final GestureDetector gestureDetector;
+internal open class OnSwipeTouchListener(ctx: Context?) : OnTouchListener {
+    private val gestureDetector: GestureDetector
 
-    OnSwipeTouchListener(Context ctx) {
-        gestureDetector = new GestureDetector(ctx, new GestureListener());
+    init {
+        gestureDetector = GestureDetector(ctx, GestureListener())
     }
 
-    @Override
-    public boolean onTouch(View v, MotionEvent event) {
-        v.performClick();
-        return gestureDetector.onTouchEvent(event);
+    override fun onTouch(v: View, event: MotionEvent): Boolean {
+        v.performClick()
+        return gestureDetector.onTouchEvent(event)
     }
 
-    void onSwipeTop() {
-    }
-
-    void onSwipeBottom() {
-    }
-
-    private final class GestureListener extends GestureDetector.SimpleOnGestureListener {
-
-        private static final int SWIPE_THRESHOLD = 100;
-        private static final int SWIPE_VELOCITY_THRESHOLD = 100;
-
-        @Override
-        public boolean onDown(MotionEvent e) {
-            return true;
+    open fun onSwipeTop() {}
+    open fun onSwipeBottom() {}
+    private inner class GestureListener : SimpleOnGestureListener() {
+        override fun onDown(e: MotionEvent): Boolean {
+            return true
         }
 
-        @Override
-        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            boolean result = false;
+        override fun onFling(
+            e1: MotionEvent,
+            e2: MotionEvent,
+            velocityX: Float,
+            velocityY: Float
+        ): Boolean {
+            var result = false
             try {
-                float diffY = e2.getY() - e1.getY();
-                float diffX = e2.getX() - e1.getX();
+                val diffY = e2.y - e1.y
+                val diffX = e2.x - e1.x
                 if (Math.abs(diffX) > Math.abs(diffY)) {
-                    if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
-                        result = true;
+                    if (Math.abs(diffX) > Companion.SWIPE_THRESHOLD && Math.abs(velocityX) > Companion.SWIPE_VELOCITY_THRESHOLD) {
+                        result = true
                     }
-                } else if (Math.abs(diffY) > SWIPE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
+                } else if (Math.abs(diffY) > Companion.SWIPE_THRESHOLD && Math.abs(velocityY) > Companion.SWIPE_VELOCITY_THRESHOLD) {
                     if (diffY > 0) {
-                        onSwipeBottom();
+                        onSwipeBottom()
                     } else {
-                        onSwipeTop();
+                        onSwipeTop()
                     }
-                    result = true;
+                    result = true
                 }
-            } catch (Exception exception) {
-                exception.printStackTrace();
+            } catch (exception: Exception) {
+                exception.printStackTrace()
             }
-            return result;
+            return result
         }
+
+    }
+
+    companion object {
+        private const val SWIPE_THRESHOLD = 100
+        private const val SWIPE_VELOCITY_THRESHOLD = 100
     }
 }

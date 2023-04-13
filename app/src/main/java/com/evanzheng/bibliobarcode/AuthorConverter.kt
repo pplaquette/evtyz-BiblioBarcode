@@ -1,39 +1,36 @@
-package com.evanzheng.bibliobarcode;
+package com.evanzheng.bibliobarcode
 
-import androidx.room.TypeConverter;
-
-import java.util.ArrayList;
-import java.util.List;
+import androidx.room.TypeConverter
 
 // A class that manages conversions between list<author> and string. Used so we can insert and get books from SQL database.
-@SuppressWarnings("WeakerAccess")
-public class AuthorConverter {
+class AuthorConverter {
     //converts author list to string for SQL database insertion, by separating the author's names by \t
     @TypeConverter
-    public String authorListToText(List<Author> authors) {
-        int numAuthors = authors.size();
-        String authorsRaw = "";
-        for (int i = 0; i < numAuthors; i++) {
-            authorsRaw = authorsRaw.concat(authors.get(i).first);
-            if (!authors.get(i).middle.equals("")) {
-                authorsRaw = authorsRaw.concat(" ").concat(authors.get(i).middle);
+    fun authorListToText(authors: List<Author>): String {
+        val numAuthors = authors.size
+        var authorsRaw = ""
+        for (i in 0 until numAuthors) {
+            authorsRaw = authorsRaw + authors[i].first
+            if (authors[i].middle != "") {
+                authorsRaw = authorsRaw + " " + authors[i].middle
             }
-            if (!authors.get(i).last.equals("")) {
-                authorsRaw = authorsRaw.concat(" ").concat(authors.get(i).last);
+            if (authors[i].last != "") {
+                authorsRaw = authorsRaw + " " + authors[i].last
             }
-            authorsRaw = authorsRaw.concat("\t");
+            authorsRaw = authorsRaw + "\t"
         }
-        return authorsRaw;
+        return authorsRaw
     }
 
     //Converts string back to author list
     @TypeConverter
-    public List<Author> authorTextToList(String authorsRaw) {
-        List<Author> authors = new ArrayList<>();
-        String[] authorListRaw = authorsRaw.split("\t");
-        for (String s : authorListRaw) {
-            authors.add(new Author(s));
+    fun authorTextToList(authorsRaw: String): List<Author> {
+        val authors: MutableList<Author> = ArrayList()
+        val authorListRaw =
+            authorsRaw.split("\t".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        for (s in authorListRaw) {
+            authors.add(Author(s))
         }
-        return authors;
+        return authors
     }
 }
