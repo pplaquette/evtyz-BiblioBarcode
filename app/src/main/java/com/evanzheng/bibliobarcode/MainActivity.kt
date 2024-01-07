@@ -59,12 +59,12 @@ class MainActivity : AppCompatActivity(), CameraXConfig.Provider {
     private val captureProcess: OnImageCapturedCallback = object : OnImageCapturedCallback() {
         override fun onCaptureSuccess(imageproxy: ImageProxy) {
             //PPL
-//            @OptIn(markerClass = ExperimentalGetImage::class) @SuppressLint("UnsafeExperimentalUsageError")
+            @OptIn(markerClass = arrayOf(androidx.camera.core.ExperimentalGetImage::class))
             val image = imageproxy.image!!
             val bitmap = imageToBitmap(image)
             processImage(bitmap)
             super.onCaptureSuccess(imageproxy)
-            image?.close()
+            image.close()
         }
 
         override fun onError(exception: ImageCaptureException) {
@@ -150,27 +150,30 @@ class MainActivity : AppCompatActivity(), CameraXConfig.Provider {
             } catch (e: InterruptedException) {
                 Log.wtf("Camera", "Camera error")
             }
-        }, ContextCompat.getMainExecutor(this))
+        }, ContextCompat. getMainExecutor(this))
 
         // Set up click listener
-        takePhoto?.setOnClickListener(View.OnClickListener { v: View? -> Take() })
-        viewfinder?.setOnTouchListener(object : OnSwipeTouchListener(this) {
-            public override fun onSwipeTop() {
-                goToBibliography()
-            }
+        takePhoto?.setOnClickListener(View.OnClickListener { Take() })
 
-            public override fun onSwipeBottom() {
-                goToISBNEntry()
-            }
-        })
+        //PPL
+//        viewfinder?.setOnTouchListener(object : OnSwipeTouchListener(this) {
+//            public override fun onSwipeTop() {
+//                goToBibliography()
+//            }
+//
+//            public override fun onSwipeBottom() {
+//                goToISBNEntry()
+//            }
+//        })
 
         //Don't show that it's loading if it's done loading
         loading?.setVisibility(View.INVISIBLE)
 
+        //PPL
         //Check if a tutorial needs to be run
         sharedPref = getPreferences(MODE_PRIVATE)
         val ranBefore = sharedPref?.getBoolean("camera", false)
-        if (!ranBefore) {
+        if (! ranBefore !!) {
             runTutorial()
         }
     }

@@ -10,11 +10,11 @@ import androidx.room.Update
 interface BookDao {
     //Inserting a book into the database
     @Insert
-    fun insertBook(book: Book?)
+    fun insertBook(book: Book)
 
     //Updating an existing book in the database
     @Update
-    fun updateBook(book: Book?)
+    fun updateBook(book: Book)
 
     //Deleting a book with a certain ISBN
     @Query("DELETE FROM books WHERE isbn=:isbn")

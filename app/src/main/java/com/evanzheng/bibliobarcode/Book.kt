@@ -10,7 +10,7 @@ import java.util.*
 // We use a type converter because authors cannot be stored in an sql database without being converted into strings
 @Entity(tableName = "books")
 @TypeConverters(AuthorConverter::class)
-class Book : Comparable<Book> {
+ class Book : Comparable<Book> {
     //ISBNs must be unique.
     @JvmField
     @PrimaryKey
@@ -35,11 +35,11 @@ class Book : Comparable<Book> {
 
     @JvmField
     @ColumnInfo(name = "city")
-    var city: String?
+    var city: String? = ""
 
     @JvmField
     @ColumnInfo(name = "state")
-    var state: String?
+    var state: String? = ""
 
     //Citations (which we can build on the spot, for space efficiency)
     @Ignore
@@ -48,15 +48,31 @@ class Book : Comparable<Book> {
     @Ignore
     var rawFormatCitation: String? = null
 
+//    @Ignore
+//    constructor(
+//        isbn: String
+//    )
+//    {
+//        this.isbn = isbn
+//        this.title = ""
+//        this.authors = mutableListOf<Author?>()
+//        this.publisher = ""
+//        this.year = ""
+//        this.city = ""
+//        this.state = ""
+//
+//    }
+
+
     //When we call a book from the database, this is what is used to build it.
     constructor(
         isbn: String,
-        title: String?,
-        authors: MutableList<Author?>,
-        publisher: String?,
-        year: String?,
-        city: String?,
-        state: String?
+        title: String?= null,
+        authors: MutableList<Author?> = mutableListOf<Author?>(),
+        publisher: String? = null,
+        year: String? = null,
+        city: String? = null,
+        state: String?= null
     ) {
         this.isbn = isbn
         this.title = title
@@ -85,7 +101,7 @@ class Book : Comparable<Book> {
                 authors.add(Author(name))
             }
             //Authors must be in alphabetical order
-            Collections.sort(authors)
+            //Collections.sort(authors) // PPL
         } catch (ignored: JSONException) {
         }
         publisher = try {
@@ -94,8 +110,10 @@ class Book : Comparable<Book> {
             ""
         }
         try {
+            //PPL
+            val bookYear = this.year!!
             year = info.getString("publishedDate")
-            year = year.substring(0, Math.min(year.length, 4))
+            year = bookYear.substring(0, Math.min(bookYear.length, 4))
         } catch (e: JSONException) {
             year = ""
         }
@@ -103,16 +121,9 @@ class Book : Comparable<Book> {
         state = ""
     }
 
+
     //Creating an empty book with fake ISBN
-    internal constructor(code: String) {
-        isbn = code
-        title = ""
-        authors = ArrayList()
-        publisher = ""
-        year = ""
-        city = ""
-        state = ""
-    }
+
 
     //Conversion between hashmap and book
     fun infoMapToList(bookInfo: Map<String?, String?>) {
@@ -129,7 +140,7 @@ class Book : Comparable<Book> {
         for (i in authorMap.keys) {
             authors.add(authorMap[i])
         }
-        Collections.sort(authors)
+        // Collections.sort(authors) //PPL
     }
 
     //Cites the book based on a style
@@ -144,7 +155,9 @@ class Book : Comparable<Book> {
         var yearCite: String
         val cityCite: String
         val stateCite: String
+
         when (style) {
+
             "MLA" -> {
                 authorCite = ""
                 if (authors.size != 0 && authors[0]!!.isNotEmpty) {
@@ -172,16 +185,16 @@ class Book : Comparable<Book> {
                 } else {
                     "$year."
                 }
-                citation = authorCite
-                +titleCite + publisherCite + yearCite
-                rawFormatCitation = authorCite
-                +"<i>" + titleCite + "</i>" + publisherCite + yearCite
+                citation = authorCite + titleCite + publisherCite + yearCite
+                rawFormatCitation = authorCite + "<i>" + titleCite + "</i>" + publisherCite + yearCite
             }
+
             "APA" -> {
+                //PPL
                 authorCite = ""
                 var i = 0
                 while (i < authors.size) {
-                    authorCite = authorCite + authors[i]!!.formattedInitializedName()
+                    authorCite += authors[i]!!.formattedInitializedName()
                     if (i != authors.size - 1) {
                         authorCite = "$authorCite, "
                     }
@@ -194,6 +207,7 @@ class Book : Comparable<Book> {
                 yearCite = if (year == "") {
                     yearCite + "n.d."
                 } else {
+
                     yearCite + year
                 }
                 yearCite = "$yearCite). "
@@ -210,11 +224,10 @@ class Book : Comparable<Book> {
                 } else {
                     "$publisher."
                 }
-                rawFormatCitation = authorCite
-                +yearCite + "<i>" + titleCite + "</i>" + cityCite + stateCite + publisherCite
-                citation = authorCite
-                +yearCite + titleCite + cityCite + stateCite + publisherCite
+                rawFormatCitation = authorCite +yearCite + "<i>" + titleCite + "</i>" + cityCite + stateCite + publisherCite
+                citation = authorCite +yearCite + titleCite + cityCite + stateCite + publisherCite
             }
+
             "Chicago" -> {
                 authorCite = ""
                 if (authors.size != 0 && authors[0]!!.isNotEmpty) {
@@ -247,11 +260,10 @@ class Book : Comparable<Book> {
                 } else {
                     "$year."
                 }
-                rawFormatCitation = authorCite
-                +"<i>" + titleCite + "</i>" + cityCite + publisherCite + yearCite
-                citation = authorCite
-                +titleCite + cityCite + publisherCite + yearCite
+                rawFormatCitation = authorCite + "<i>" + titleCite + "</i>" + cityCite + publisherCite + yearCite
+                citation = authorCite + titleCite + cityCite + publisherCite + yearCite
             }
+
             "Harvard" -> {
                 authorCite = ""
                 if (authors.size != 0 && authors[0]!!.isNotEmpty) {
@@ -280,12 +292,13 @@ class Book : Comparable<Book> {
                 } else {
                     "$publisher."
                 }
-                rawFormatCitation = authorCite
-                +yearCite + "<i>" + titleCite + "</i>" + cityCite + publisherCite
-                citation = authorCite
-                +yearCite + titleCite + cityCite + publisherCite
+                rawFormatCitation = "$authorCite$yearCite<i>$titleCite</i>$cityCite$publisherCite"
+                citation = authorCite + yearCite + titleCite + cityCite + publisherCite
             }
-            else -> rawFormatCitation = "$title Citation error"
+
+            else -> {
+                rawFormatCitation = "$title Citation error"
+            }
         }
     }
 
@@ -295,7 +308,7 @@ class Book : Comparable<Book> {
     }
 
     //Implements comparable interface, where we compare books by alphabetical order of citation (to sort the bibliography)
-    override fun compareTo(book: Book): Int {
-        return citation!!.compareTo(book.citation!!)
+    override fun compareTo(other: Book): Int {
+        return citation!!.compareTo(other.citation!!)
     }
 }

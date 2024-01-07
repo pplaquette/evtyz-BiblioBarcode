@@ -54,17 +54,21 @@ class BookActivity : AppCompatActivity() {
 
         //Set up views
         saveButton = findViewById(R.id.addToBibliography)
-        saveButton?.setOnClickListener(View.OnClickListener { v: View? -> addToBibliography() })
+        saveButton?.setOnClickListener { _: View? -> addToBibliography() }
 
         //Initialize toolbar and views
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         title = "Edit Info:"
         setSupportActionBar(toolbar)
-        Objects.requireNonNull(supportActionBar).setDisplayShowHomeEnabled(true)
-        Objects.requireNonNull(supportActionBar).setDisplayHomeAsUpEnabled(true)
+
+        //PPL
+        Objects.requireNonNull(supportActionBar!!).setDisplayShowHomeEnabled(true)
+        Objects.requireNonNull(supportActionBar!!).setDisplayHomeAsUpEnabled(true)
+
         viewGroup = findViewById(R.id.listFields)
+
         searchButton = findViewById(R.id.searchLocation)
-        searchButton?.setVisibility(View.INVISIBLE)
+        searchButton?.visibility = View.INVISIBLE
 
         //Set up layout inflater
         layoutInflater = getLayoutInflater()
@@ -74,7 +78,7 @@ class BookActivity : AppCompatActivity() {
         val intent = intent
 
         //How did we enter this activity?
-        var code = intent.getStringExtra("barcode")
+        var code :String? = intent.getStringExtra("barcode")
         if (code == null) {
             code = intent.getStringExtra("isbn")
             if (code == null) {
@@ -82,12 +86,14 @@ class BookActivity : AppCompatActivity() {
                 code = intent.getStringExtra("empty")
                 isNew = true
                 assert(code != null)
-                book = Book(code!!)
+
+                book = Book(isbn = code!!.toString())
+
                 processAuthors()
                 processBook()
             } else {
                 // We entered it via editing an existing book
-                book = MainActivity.database.bookDao().loadBook(code)
+                book = MainActivity.database?.bookDao()?.loadBook(code)
                 isNew = false
                 saveButton?.setImageResource(R.drawable.content_save)
                 processAuthors()
@@ -124,7 +130,7 @@ class BookActivity : AppCompatActivity() {
     //On pressing the back button, go back
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
-            onBackPressed()
+            onBackPressedDispatcher.onBackPressed()
             return true
         }
         return false
@@ -133,8 +139,7 @@ class BookActivity : AppCompatActivity() {
     //Loads a book based on the code
     private fun loadBook(isbn: String) {
         //First API call
-        val url = "https://www.googleapis.com/books/v1/volumes?q=isbn:"
-        +isbn
+        val url = "https://www.googleapis.com/books/v1/volumes?q=isbn:$isbn"
         val request = JsonObjectRequest(Request.Method.GET, url, null, { response: JSONObject ->
             try {
                 //Gets the first item searched (book that corresponds to ISBN) and then gets the url of the selfLink
@@ -164,7 +169,7 @@ class BookActivity : AppCompatActivity() {
                             ).show()
                             returnToCamera()
                         }
-                    }) { error1: VolleyError? ->
+                    }) { _: VolleyError? ->
                     Toast.makeText(
                         this,
                         "We couldn't find this book. Error Code 2B",
@@ -178,7 +183,7 @@ class BookActivity : AppCompatActivity() {
                     .show()
                 returnToCamera()
             }
-        }) { error: VolleyError? ->
+        }) { _: VolleyError? ->
             Toast.makeText(this, "We couldn't find this book. Error Code 1B", Toast.LENGTH_SHORT)
                 .show()
             returnToCamera()
@@ -273,24 +278,32 @@ class BookActivity : AppCompatActivity() {
             @SuppressLint("InflateParams") val authorAdd =
                 layoutInflater!!.inflate(R.layout.author_add, null)
             val firstName = authorAdd.findViewById<EditText>(R.id.add_first)
+
             firstName.setText(first)
-            firstName.addTextChangedListener(object : AuthorTextWatcher(i) {
+
+
+            //PPL
+            firstName.addTextChangedListener(/* watcher = */ object : AuthorTextWatcher(i) {
                 override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                    Objects.requireNonNull(authors!![id]).first = s.toString()
+                    s.toString().also { Objects.requireNonNull(authors!![id])!!.first = it }
                 }
             })
+
+            //PPL
             val middleName = authorAdd.findViewById<EditText>(R.id.add_middle)
             middleName.setText(middle)
             middleName.addTextChangedListener(object : AuthorTextWatcher(i) {
                 override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                    Objects.requireNonNull(authors!![id]).middle = s.toString()
+                    Objects.requireNonNull(authors!![id])!!.middle = s.toString()
                 }
             })
+
+            //PPL
             val lastName = authorAdd.findViewById<EditText>(R.id.add_last)
             lastName.setText(last)
             lastName.addTextChangedListener(object : AuthorTextWatcher(i) {
                 override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                    Objects.requireNonNull(authors!![id]).last = s.toString()
+                    Objects.requireNonNull(authors!![id])!!.last = s.toString()
                 }
             })
             fieldAuthorEdit?.addView(
@@ -331,23 +344,27 @@ class BookActivity : AppCompatActivity() {
         val newAuthor = Author()
 
         //Add to hashmap
+        //PPL
         authors!![nextAuthorId] = newAuthor
         val firstName = authorAdd.findViewById<EditText>(R.id.add_first)
         firstName.addTextChangedListener(object : AuthorTextWatcher(nextAuthorId) {
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                Objects.requireNonNull(authors!![id]).first = s.toString()
+                Objects.requireNonNull(authors!![id])!!.first = s.toString()
             }
         })
+        //PPL
         val middleName = authorAdd.findViewById<EditText>(R.id.add_middle)
         middleName.addTextChangedListener(object : AuthorTextWatcher(nextAuthorId) {
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                Objects.requireNonNull(authors!![id]).middle = s.toString()
+                Objects.requireNonNull(authors!![id])!!.middle = s.toString()
             }
         })
+
+        //PPL
         val lastName = authorAdd.findViewById<EditText>(R.id.add_last)
         lastName.addTextChangedListener(object : AuthorTextWatcher(nextAuthorId) {
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                Objects.requireNonNull(authors!![id]).last = s.toString()
+                Objects.requireNonNull(authors!![id])!!.last = s.toString()
             }
         })
         fieldAuthorEdit!!.addView(
@@ -389,9 +406,9 @@ class BookActivity : AppCompatActivity() {
 
         //Inserts or updates a book
         if (isNew) {
-            MainActivity.database.bookDao().insertBook(book)
+            MainActivity.database?.bookDao()?.insertBook(book!!)
         } else {
-            MainActivity.database.bookDao().updateBook(book)
+            MainActivity.database?.bookDao()?.updateBook(book!!)
         }
 
         //Goes to next activity

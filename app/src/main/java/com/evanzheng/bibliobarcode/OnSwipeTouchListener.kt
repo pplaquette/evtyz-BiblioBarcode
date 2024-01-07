@@ -9,6 +9,7 @@ import android.view.View.OnTouchListener
 
 //Implementation of Mirek Rusin's "OnSwipeTouchListener" from https://stackoverflow.com/questions/4139288/android-how-to-handle-right-to-left-swipe-gestures
 internal open class OnSwipeTouchListener(ctx: Context?) : OnTouchListener {
+
     private val gestureDetector: GestureDetector
 
     init {
@@ -27,16 +28,16 @@ internal open class OnSwipeTouchListener(ctx: Context?) : OnTouchListener {
             return true
         }
 
-        override fun onFling(
-            e1: MotionEvent,
-            e2: MotionEvent,
-            velocityX: Float,
-            velocityY: Float
-        ): Boolean {
+         override fun onFling(
+             e1: MotionEvent?,
+             e2: MotionEvent,
+             velocityX: Float,
+             velocityY: Float
+         ): Boolean {
             var result = false
             try {
-                val diffY = e2.y - e1.y
-                val diffX = e2.x - e1.x
+                val diffY = e2.y - e1!!.y
+                val diffX = e2.x - e1!!.x
                 if (Math.abs(diffX) > Math.abs(diffY)) {
                     if (Math.abs(diffX) > Companion.SWIPE_THRESHOLD && Math.abs(velocityX) > Companion.SWIPE_VELOCITY_THRESHOLD) {
                         result = true
